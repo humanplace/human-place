@@ -210,7 +210,7 @@ const PixelCanvas = () => {
   return (
     <div 
       ref={containerRef} 
-      className="flex-1 overflow-hidden touch-none"
+      className="flex-1 overflow-hidden touch-none flex items-center justify-center"
     >
       <canvas
         ref={canvasRef}

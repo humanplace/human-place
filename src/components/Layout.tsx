@@ -2,7 +2,6 @@
 import React from 'react';
 import Header from './Header';
 import ColorPicker from './ColorPicker';
-import PixelCanvas from './PixelCanvas';
 import { CanvasProvider } from '@/context/CanvasContext';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -10,7 +9,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <CanvasProvider>
       <div className="app-container flex flex-col h-screen w-screen overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden flex items-center justify-center">
           {children}
         </main>
         <ColorPicker />
