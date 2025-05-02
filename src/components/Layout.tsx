@@ -1,0 +1,22 @@
+
+import React from 'react';
+import Header from './Header';
+import ColorPicker from './ColorPicker';
+import PixelCanvas from './PixelCanvas';
+import { CanvasProvider } from '@/context/CanvasContext';
+
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <CanvasProvider>
+      <div className="app-container flex flex-col h-screen w-screen overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-hidden">
+          {children}
+        </main>
+        <ColorPicker />
+      </div>
+    </CanvasProvider>
+  );
+};
+
+export default Layout;
