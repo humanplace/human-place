@@ -32,9 +32,9 @@ type CanvasAction =
   | { type: 'SELECT_COLOR'; color: PixelColor }
   | { type: 'INITIALIZE_CANVAS'; pixels: PixelColor[][] };
 
-// Initial state 
+// Initial state - Changed to initialize with black pixels instead of white
 const initialState: CanvasState = {
-  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill('white')),
+  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill('black')),
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
   zoom: MIN_ZOOM_LEVEL,

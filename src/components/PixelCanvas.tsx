@@ -118,8 +118,8 @@ const PixelCanvas = () => {
     const startX = Math.floor(state.position.x - (tilesWide / 2));
     const startY = Math.floor(state.position.y - (tilesHigh / 2));
     
-    // Clear the canvas with white background instead of gray
-    ctx.fillStyle = '#FFFFFF'; // Changed from #f0f0f0 to white
+    // Clear the canvas with white background
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Calculate pixel offset for smooth panning
@@ -143,7 +143,6 @@ const PixelCanvas = () => {
         
         // Draw the actual pixel
         const pixelColor = state.pixels[gridY][gridX];
-        ctx.fillStyle = `theme('colors.canvas.${pixelColor}')`;
         
         // Use the Tailwind color values directly
         switch(pixelColor) {
@@ -211,6 +210,7 @@ const PixelCanvas = () => {
     <div 
       ref={containerRef} 
       className="w-full h-full overflow-hidden touch-none flex items-center justify-center"
+      style={{ border: "1px solid #ddd", background: '#fff' }}
     >
       <canvas
         ref={canvasRef}
