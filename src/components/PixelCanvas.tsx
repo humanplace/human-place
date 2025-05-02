@@ -118,8 +118,8 @@ const PixelCanvas = () => {
     const startX = Math.floor(state.position.x - (tilesWide / 2));
     const startY = Math.floor(state.position.y - (tilesHigh / 2));
     
-    // Clear the canvas
-    ctx.fillStyle = '#f0f0f0'; // Background color for areas outside canvas
+    // Clear the canvas with white background instead of gray
+    ctx.fillStyle = '#FFFFFF'; // Changed from #f0f0f0 to white
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Calculate pixel offset for smooth panning
@@ -210,7 +210,7 @@ const PixelCanvas = () => {
   return (
     <div 
       ref={containerRef} 
-      className="flex-1 overflow-hidden touch-none flex items-center justify-center"
+      className="w-full h-full overflow-hidden touch-none flex items-center justify-center"
     >
       <canvas
         ref={canvasRef}
