@@ -20,6 +20,7 @@ const ColorPicker = () => {
               className={`
                 w-8 h-8 rounded-full flex-shrink-0
                 ${state.selectedColor === color ? 'ring-2 ring-black ring-offset-2' : ''}
+                ${color === 'white' ? 'border border-gray-300' : ''}
                 shadow-sm
               `}
               style={{
