@@ -1,3 +1,4 @@
+
 import { PixelColor } from "@/context/CanvasContext";
 
 // Draw a pixel on the canvas
@@ -19,9 +20,30 @@ export const drawGridLine = (
   y: number,
   size: number
 ) => {
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(221, 221, 221, 1.0)';
-  ctx.strokeRect(x, y, size, size);
+  // Disable anti-aliasing for crisp lines
+  ctx.imageSmoothingEnabled = false;
+  
+  // Set composite operation to ensure full replacement
+  ctx.globalCompositeOperation = 'source-over';
+  
+  // Use a darker color for better visibility
+  const gridColor = '#333333';
+  
+  // Draw four separate filled rectangles for each border
+  const lineWidth = 1;
+  
+  // Top border
+  ctx.fillStyle = gridColor;
+  ctx.fillRect(x, y, size, lineWidth);
+  
+  // Right border
+  ctx.fillRect(x + size - lineWidth, y, lineWidth, size);
+  
+  // Bottom border
+  ctx.fillRect(x, y + size - lineWidth, size, lineWidth);
+  
+  // Left border
+  ctx.fillRect(x, y, lineWidth, size);
 };
 
 // Draw the entire grid at once to avoid overlapping lines
