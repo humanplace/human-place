@@ -17,19 +17,31 @@ export const useCanvasInteraction = () => {
 
   // Handle click/tap on canvas to place a pixel
   const handleCanvasClick = (clientX: number, clientY: number, canvasRect: DOMRect) => {
+    if (!state.pixels) return;
+    
     // Calculate tile size based on zoom level
     const tileSize = state.zoom;
     
-    // Calculate the grid position based on pixel coordinates
-    const x = Math.floor((clientX - canvasRect.left) / tileSize);
-    const y = Math.floor((clientY - canvasRect.top) / tileSize);
+    // Calculate relative position within the canvas
+    const canvasX = clientX - canvasRect.left;
+    const canvasY = clientY - canvasRect.top;
     
-    // Adjust for viewport offset
-    const viewportX = Math.floor(state.position.x - (canvasRect.width / (2 * tileSize)));
-    const viewportY = Math.floor(state.position.y - (canvasRect.height / (2 * tileSize)));
+    // Calculate how many tiles fit in the view
+    const tilesWide = Math.ceil(canvasRect.width / tileSize);
+    const tilesHigh = Math.ceil(canvasRect.height / tileSize);
     
-    const gridX = x + viewportX;
-    const gridY = y + viewportY;
+    // Calculate the grid position based on the center position and click coordinates
+    const viewportStartX = state.position.x - (tilesWide / 2);
+    const viewportStartY = state.position.y - (tilesHigh / 2);
+    
+    // Convert from screen space to grid space
+    const gridX = Math.floor(viewportStartX + (canvasX / tileSize));
+    const gridY = Math.floor(viewportStartY + (canvasY / tileSize));
+    
+    console.log('Click registered at:', gridX, gridY);
+    console.log('Position:', state.position);
+    console.log('Canvas dimensions:', canvasRect.width, canvasRect.height);
+    console.log('Click at canvas coordinates:', canvasX, canvasY);
     
     // Check if the coordinates are within canvas bounds
     if (gridX >= 0 && gridX < CANVAS_SIZE && gridY >= 0 && gridY < CANVAS_SIZE) {
@@ -75,8 +87,14 @@ export const useCanvasInteraction = () => {
     if (!touchInfo.current.isDragging) {
       touchInfo.current.isDragging = true;
       
+      // Check if there's significant movement to consider this a drag, not a tap
+      const deltaX = Math.abs(touch.clientX - touchInfo.current.startTouchX);
+      const deltaY = Math.abs(touch.clientY - touchInfo.current.startTouchY);
+      
       // If there is significant movement, it's not a tap
-      touchInfo.current.isTap = false;
+      if (deltaX > 5 || deltaY > 5) {
+        touchInfo.current.isTap = false;
+      }
     }
     
     // Calculate the distance moved

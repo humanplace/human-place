@@ -103,22 +103,24 @@ export const calculateViewport = (
   position: { x: number, y: number },
   tileSize: number
 ) => {
-  const tilesWide = Math.ceil(containerWidth / tileSize);
-  const tilesHigh = Math.ceil(containerHeight / tileSize);
+  // Calculate how many tiles can fit in the container
+  const tilesWide = Math.ceil(containerWidth / tileSize) + 1; // Add 1 extra tile to prevent gaps
+  const tilesHigh = Math.ceil(containerHeight / tileSize) + 1; // Add 1 extra tile to prevent gaps
   
   // Calculate the top-left corner of the viewport in grid coordinates
-  const startX = Math.floor(position.x - (tilesWide / 2));
-  const startY = Math.floor(position.y - (tilesHigh / 2));
+  // Center the view on the position coordinates
+  const startX = position.x - (tilesWide / 2);
+  const startY = position.y - (tilesHigh / 2);
   
-  // Calculate pixel offset for smooth panning
+  // Calculate pixel offset for smooth panning (decimal part of the starting position)
   const offsetX = (startX - Math.floor(startX)) * tileSize;
   const offsetY = (startY - Math.floor(startY)) * tileSize;
   
   return { 
     tilesWide, 
     tilesHigh, 
-    startX, 
-    startY, 
+    startX: Math.floor(startX),  // Floor to get the integer grid position
+    startY: Math.floor(startY),  // Floor to get the integer grid position
     offsetX, 
     offsetY 
   };

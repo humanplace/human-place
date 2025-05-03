@@ -48,7 +48,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
     
-    // Set canvas dimensions
+    // Set canvas dimensions to match container
     canvas.width = containerWidth;
     canvas.height = containerHeight;
     
@@ -64,25 +64,31 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
       tileSize
     );
     
+    console.log('Viewport:', viewport);
+    console.log('Position:', state.position);
+    console.log('Container dimensions:', containerWidth, containerHeight);
+    console.log('Zoom:', tileSize);
+    
     // Draw the pixels
-    for (let y = 0; y < viewport.tilesHigh + 1; y++) {
-      for (let x = 0; x < viewport.tilesWide + 1; x++) {
-        const gridX = Math.floor(viewport.startX) + x;
-        const gridY = Math.floor(viewport.startY) + y;
+    // Expand the rendering loop slightly to ensure we cover the whole visible area
+    for (let y = 0; y <= viewport.tilesHigh + 1; y++) {
+      for (let x = 0; x <= viewport.tilesWide + 1; x++) {
+        const gridX = viewport.startX + x;
+        const gridY = viewport.startY + y;
         
         // Skip pixels outside the canvas bounds
         if (gridX < 0 || gridX >= CANVAS_SIZE || gridY < 0 || gridY >= CANVAS_SIZE) {
           continue;
         }
         
-        // Calculate pixel position
-        const pixelX = x * tileSize - viewport.offsetX;
-        const pixelY = y * tileSize - viewport.offsetY;
+        // Calculate pixel position on screen
+        const pixelX = Math.floor(x * tileSize - viewport.offsetX);
+        const pixelY = Math.floor(y * tileSize - viewport.offsetY);
         
         // Draw the pixel only if it has a color (not undefined)
-        const pixelColor = state.pixels[gridY][gridX];
-        if (pixelColor !== undefined) {
-          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
+        if (state.pixels[gridY] && state.pixels[gridY][gridX] !== undefined) {
+          const pixelColor = state.pixels[gridY][gridX];
+          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor!);
         }
       }
     }
@@ -92,14 +98,17 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
       const { x, y, color } = state.pendingPixel;
       
       // Check if pending pixel is in the visible area
-      if (x >= viewport.startX && x < viewport.startX + viewport.tilesWide && 
-          y >= viewport.startY && y < viewport.startY + viewport.tilesHigh) {
-        
-        const pixelX = (x - viewport.startX) * tileSize - viewport.offsetX;
-        const pixelY = (y - viewport.startY) * tileSize - viewport.offsetY;
-        
+      const screenX = (x - viewport.startX) * tileSize - viewport.offsetX;
+      const screenY = (y - viewport.startY) * tileSize - viewport.offsetY;
+      
+      // Only draw if it's in the visible area
+      if (x >= viewport.startX && x <= viewport.startX + viewport.tilesWide && 
+          y >= viewport.startY && y <= viewport.startY + viewport.tilesHigh) {
         // Draw the pending pixel
-        drawPixel(ctx, pixelX, pixelY, tileSize, color);
+        drawPixel(ctx, screenX, screenY, tileSize, color);
+        
+        // Draw a highlight around the pending pixel
+        drawPendingPixelBorder(ctx, screenX, screenY, tileSize);
       }
     }
     
