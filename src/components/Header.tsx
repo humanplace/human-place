@@ -40,7 +40,7 @@ const Header = () => {
 
   return (
     <header className="h-14 flex items-center justify-between px-4 bg-white border-b shadow-sm">
-      <button onClick={handleRefresh} className="p-2 rounded-full hover:bg-gray-100">
+      <button onClick={handleRefresh} className="p-2">
         <RefreshCw size={24} />
       </button>
       
@@ -48,7 +48,7 @@ const Header = () => {
         <button
           onClick={handleZoomOut}
           disabled={currentZoomIndex === 0}
-          className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+          className="p-2 disabled:opacity-50"
         >
           <ZoomOut size={24} />
         </button>
@@ -60,7 +60,7 @@ const Header = () => {
         <button
           onClick={handleZoomIn}
           disabled={currentZoomIndex === ZOOM_LEVELS.length - 1}
-          className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+          className="p-2 disabled:opacity-50"
         >
           <ZoomIn size={24} />
         </button>
@@ -68,7 +68,7 @@ const Header = () => {
         <button
           onClick={handleCommitPixel}
           disabled={!state.pendingPixel}
-          className="ml-2 p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+          className="ml-2 p-2 disabled:opacity-50"
         >
           <Send size={24} className={state.pendingPixel ? "text-blue-500" : "text-gray-400"} />
         </button>
