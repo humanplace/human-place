@@ -44,9 +44,9 @@ const Header = () => {
 
       // Convert the flat array of pixels to our 2D array format
       if (data && data.length > 0) {
-        // Create an empty canvas of the correct size
+        // Create a canvas with default black pixels
         const canvasSize = CANVAS_SIZE;
-        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill(null));
+        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
         
         // Apply all the pixels from Supabase
         data.forEach(pixel => {
@@ -80,8 +80,6 @@ const Header = () => {
         description: "Could not fetch the latest canvas data. Please try again later.",
         variant: "destructive",
       });
-
-      // No fallback to localStorage - we rely entirely on the database
     }
   };
 

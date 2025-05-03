@@ -16,7 +16,7 @@ export const COLORS: PixelColor[] = ['black', 'white', 'red', 'green', 'yellow',
 
 // Canvas state interface
 interface CanvasState {
-  pixels: (PixelColor | null)[][];  // Now accepting null for pixels not loaded yet
+  pixels: PixelColor[][];  // Removed null option
   pendingPixel: { x: number; y: number; color: PixelColor } | null;
   position: { x: number; y: number };
   zoom: number;
@@ -32,11 +32,11 @@ type CanvasAction =
   | { type: 'SET_POSITION'; x: number; y: number }
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: PixelColor }
-  | { type: 'INITIALIZE_CANVAS'; pixels: (PixelColor | null)[][] };
+  | { type: 'INITIALIZE_CANVAS'; pixels: PixelColor[][] };
 
-// Initial state - empty grid (no default colors), will be populated from the database
+// Initial state - initialized with black pixels instead of null
 const initialState: CanvasState = {
-  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill(null)),
+  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill('black')),
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
   zoom: MIN_ZOOM_LEVEL,
@@ -157,9 +157,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
         // If data exists, convert the flat array of pixels to our 2D array format
         if (data && data.length > 0) {
-          // Create an empty canvas of the correct size
+          // Create a canvas filled with black pixels as the default
           const canvasSize = CANVAS_SIZE;
-          const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill(null));
+          const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
           
           // Apply all the pixels from Supabase
           data.forEach(pixel => {
