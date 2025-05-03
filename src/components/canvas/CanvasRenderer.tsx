@@ -129,8 +129,14 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         // Draw the pending pixel
         drawPixel(ctx, screenX, screenY, tileSize, color);
         
-        // Draw a highlight around the pending pixel
-        drawPendingPixelBorder(ctx, screenX, screenY, tileSize);
+        // Draw grid lines for pending pixel when zoom level is 16 or higher
+        if (tileSize >= 16) {
+          drawGridLine(ctx, screenX, screenY, tileSize);
+        }
+        
+        // We're no longer drawing the border highlight for pending pixels
+        // The line below is commented out to remove the 2px border
+        // drawPendingPixelBorder(ctx, screenX, screenY, tileSize);
       }
     }
     
