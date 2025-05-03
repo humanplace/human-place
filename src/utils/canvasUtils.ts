@@ -1,4 +1,3 @@
-
 import { PixelColor } from "@/context/CanvasContext";
 
 // Draw a pixel on the canvas
@@ -21,7 +20,7 @@ export const drawGridLine = (
   size: number
 ) => {
   ctx.lineWidth = 1;
-  ctx.strokeStyle = '#DDDDDD';
+  ctx.strokeStyle = 'rgba(221, 221, 221, 1.0)';
   ctx.strokeRect(x, y, size, size);
 };
 
