@@ -79,9 +79,11 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = x * tileSize - viewport.offsetX;
         const pixelY = y * tileSize - viewport.offsetY;
         
-        // Draw the pixel
+        // Draw the pixel only if it has a color (not undefined)
         const pixelColor = state.pixels[gridY][gridX];
-        drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
+        if (pixelColor !== undefined) {
+          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
+        }
       }
     }
     

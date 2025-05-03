@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -15,8 +16,8 @@ export const COLORS: PixelColor[] = ['black', 'white', 'red', 'green', 'yellow',
 
 // Canvas state interface
 interface CanvasState {
-  pixels: PixelColor[][] | null;  // Null when data is loading
-  isLoading: boolean;  // New loading state flag
+  pixels: (PixelColor | undefined)[][] | null;  // Sparse array with undefined for pixels not in the database
+  isLoading: boolean;  // Loading state flag
   pendingPixel: { x: number; y: number; color: PixelColor } | null;
   position: { x: number; y: number };
   zoom: number;
@@ -32,8 +33,8 @@ type CanvasAction =
   | { type: 'SET_POSITION'; x: number; y: number }
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: PixelColor }
-  | { type: 'INITIALIZE_CANVAS'; pixels: PixelColor[][] }
-  | { type: 'SET_LOADING'; isLoading: boolean };  // New action to set loading state
+  | { type: 'INITIALIZE_CANVAS'; pixels: (PixelColor | undefined)[][] }
+  | { type: 'SET_LOADING'; isLoading: boolean };
 
 // Initial state - we start with null pixels array (loading state)
 const initialState: CanvasState = {
@@ -170,15 +171,14 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           throw error;
         }
 
-        // If data exists, convert the flat array of pixels to our 2D array format
+        // If data exists, convert the flat array of pixels to our sparse format
         if (data && data.length > 0) {
-          // Create an empty canvas of the correct size
-          const canvasSize = CANVAS_SIZE;
-          const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black' as PixelColor));
+          // Create a sparse canvas without filling with default colors
+          const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
           
           // Apply all the pixels from Supabase
           data.forEach(pixel => {
-            if (pixel.x >= 0 && pixel.x < canvasSize && pixel.y >= 0 && pixel.y < canvasSize) {
+            if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
               loadedPixels[pixel.y][pixel.x] = pixel.color as PixelColor;
             }
           });

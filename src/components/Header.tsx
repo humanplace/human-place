@@ -45,15 +45,15 @@ const Header = () => {
         throw error;
       }
 
-      // Convert the flat array of pixels to our 2D array format
+      // Convert the flat array of pixels to our sparse format
+      // Instead of initializing with black pixels, we'll just create a sparse array with only the pixels from the database
       if (data && data.length > 0) {
-        // Create a canvas with properly initialized pixel values
-        const canvasSize = CANVAS_SIZE;
-        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
+        // Create a sparse canvas without filling with any default color
+        const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
         
         // Apply all the pixels from Supabase
         data.forEach(pixel => {
-          if (pixel.x >= 0 && pixel.x < canvasSize && pixel.y >= 0 && pixel.y < canvasSize) {
+          if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
             loadedPixels[pixel.y][pixel.x] = pixel.color;
           }
         });
