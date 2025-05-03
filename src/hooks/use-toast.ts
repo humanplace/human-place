@@ -15,8 +15,6 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-// ... keep existing code (actionTypes, genId, etc.)
-
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
@@ -72,8 +70,6 @@ const addToRemoveQueue = (toastId: string) => {
 
   toastTimeouts.set(toastId, timeout)
 }
-
-// ... keep existing code (reducer, listeners, memoryState, dispatch, etc.)
 
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
