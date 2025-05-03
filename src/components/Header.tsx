@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut, Check } from 'lucide-react';
@@ -91,14 +92,14 @@ const Header = () => {
         // Update the canvas state with loaded pixels
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
 
-        // Show success toast with checkmark icon in the title
+        // Show success toast with just a checkmark icon in the title
         toast({
           title: (
             <div className="flex items-center gap-2">
               <Check size={18} className="text-green-500" />
               <span>Canvas loaded!</span>
             </div>
-          ),
+          )
         });
       } else {
         // If no data, show an error message
