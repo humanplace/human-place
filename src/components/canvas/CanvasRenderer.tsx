@@ -68,19 +68,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         // Draw the actual pixel
         const pixelColor = state.pixels[gridY][gridX];
         drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
-        
-        // We no longer draw grid lines here - we'll draw them all at once later
       }
-    }
-    
-    // Draw the grid after all pixels are drawn (only for zoom levels 16x and above)
-    if (tileSize >= 16) {
-      // Calculate the grid starting position and size
-      const gridStartX = 0;  // Start from the left edge of the visible canvas
-      const gridStartY = 0;  // Start from the top edge of the visible canvas
-      
-      // Draw the grid across the entire visible canvas
-      drawGrid(ctx, gridStartX, gridStartY, containerWidth, containerHeight, tileSize);
     }
     
     // Draw pending pixel if it exists
@@ -94,9 +82,20 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = (x - viewport.startX) * tileSize - viewport.offsetX;
         const pixelY = (y - viewport.startY) * tileSize - viewport.offsetY;
         
-        // Draw the pending pixel (removed the border drawing)
+        // Draw the pending pixel
         drawPixel(ctx, pixelX, pixelY, tileSize, color);
       }
+    }
+    
+    // Draw the grid LAST - after all pixels and pending pixels
+    // Only for zoom levels 16x and above
+    if (tileSize >= 16) {
+      // Calculate the grid starting position and size
+      const gridStartX = 0;  // Start from the left edge of the visible canvas
+      const gridStartY = 0;  // Start from the top edge of the visible canvas
+      
+      // Draw the grid across the entire visible canvas
+      drawGrid(ctx, gridStartX, gridStartY, containerWidth, containerHeight, tileSize);
     }
   }, [state, canvasRef, containerRef]);
 
