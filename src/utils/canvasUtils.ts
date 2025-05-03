@@ -1,4 +1,3 @@
-
 import { PixelColor } from "@/context/CanvasContext";
 
 // Draw a pixel on the canvas
@@ -23,6 +22,40 @@ export const drawGridLine = (
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#DDDDDD';
   ctx.strokeRect(x, y, size, size);
+};
+
+// Draw the entire grid at once to avoid overlapping lines
+export const drawGrid = (
+  ctx: CanvasRenderingContext2D,
+  startX: number,
+  startY: number,
+  width: number,
+  height: number,
+  tileSize: number
+) => {
+  // Use a consistent color for all grid lines
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#DDDDDD';
+  
+  // Start at the first visible tile boundary
+  const startDrawX = startX;
+  const startDrawY = startY;
+  
+  // Draw vertical lines
+  for (let x = 0; x <= width; x += tileSize) {
+    ctx.beginPath();
+    ctx.moveTo(startDrawX + x, startDrawY);
+    ctx.lineTo(startDrawX + x, startDrawY + height);
+    ctx.stroke();
+  }
+  
+  // Draw horizontal lines
+  for (let y = 0; y <= height; y += tileSize) {
+    ctx.beginPath();
+    ctx.moveTo(startDrawX, startDrawY + y);
+    ctx.lineTo(startDrawX + width, startDrawY + y);
+    ctx.stroke();
+  }
 };
 
 // Draw a highlight border around a pending pixel
@@ -82,4 +115,3 @@ export const calculateViewport = (
     offsetY 
   };
 };
-
