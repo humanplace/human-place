@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
-import { RefreshCw, Send, ZoomIn, ZoomOut, Check } from 'lucide-react';
+import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -72,6 +72,12 @@ const Header = () => {
       // Set loading state
       dispatch({ type: 'SET_LOADING', isLoading: true });
       
+      // Show loading toast
+      toast({
+        title: "Loading canvas...",
+        description: "Fetching the latest canvas data from the server.",
+      });
+
       // Fetch all the pixels from Supabase using our pagination helper
       const data = await fetchAllCanvasPixels();
       
@@ -92,14 +98,10 @@ const Header = () => {
         // Update the canvas state with loaded pixels
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
 
-        // Show success toast with just a checkmark icon in the title
+        // Show success toast
         toast({
-          title: (
-            <div className="flex items-center gap-2">
-              <Check size={18} className="text-green-500" />
-              <span>Canvas loaded!</span>
-            </div>
-          )
+          title: "Canvas loaded!",
+          description: `Successfully loaded ${data.length} pixels from the server.`,
         });
       } else {
         // If no data, show an error message
