@@ -71,8 +71,6 @@ const Header = () => {
       // Set loading state
       dispatch({ type: 'SET_LOADING', isLoading: true });
       
-      // No longer showing loading toast - removed
-
       // Fetch all the pixels from Supabase using our pagination helper
       const data = await fetchAllCanvasPixels();
       
@@ -93,10 +91,9 @@ const Header = () => {
         // Update the canvas state with loaded pixels
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
 
-        // Show success toast with checkmark icon and no description
+        // Show success toast with checkmark icon in the title
         toast({
-          title: "Canvas loaded!",
-          description: (
+          title: (
             <div className="flex items-center gap-2">
               <Check size={18} className="text-green-500" />
               <span>Canvas loaded!</span>

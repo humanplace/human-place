@@ -6,7 +6,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 2000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -14,6 +14,8 @@ type ToasterToast = ToastProps & {
   description?: React.ReactNode
   action?: ToastActionElement
 }
+
+// ... keep existing code (actionTypes, genId, etc.)
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -70,6 +72,8 @@ const addToRemoveQueue = (toastId: string) => {
 
   toastTimeouts.set(toastId, timeout)
 }
+
+// ... keep existing code (reducer, listeners, memoryState, dispatch, etc.)
 
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
