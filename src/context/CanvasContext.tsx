@@ -1,5 +1,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 // Canvas dimensions and constants
 export const CANVAS_SIZE = 100;
@@ -41,6 +43,28 @@ const initialState: CanvasState = {
   selectedColor: 'black'
 };
 
+// Helper function to update a pixel in Supabase
+async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
+  try {
+    // Use upsert to implement "last write wins" logic
+    const { error } = await supabase
+      .from('pixels')
+      .upsert(
+        { x, y, color },
+        { onConflict: 'x,y' } // The composite primary key columns
+      );
+    
+    if (error) {
+      console.error('Failed to save pixel to Supabase:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error saving pixel to Supabase:', error);
+    // We're not going to block the UI or show an error to the user here
+    // since the pixel is still saved locally, and they can try again later
+  }
+}
+
 // Reducer function to handle all canvas-related actions
 function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
   switch (action.type) {
@@ -69,6 +93,16 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
       // Save the canvas to localStorage after committing
       const canvasData = JSON.stringify(updatedPixels);
       localStorage.setItem('pixelCanvas', canvasData);
+      
+      // Save to Supabase (async, won't block UI)
+      updatePixelInSupabase(x, y, color)
+        .catch((error) => {
+          toast({
+            title: "Failed to save pixel",
+            description: "Your pixel was saved locally but not on the server. Try refreshing later.",
+            variant: "destructive",
+          });
+        });
       
       return {
         ...state,

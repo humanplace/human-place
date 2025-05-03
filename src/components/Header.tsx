@@ -1,7 +1,8 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const Header = () => {
   const { state, dispatch } = useCanvas();
@@ -25,15 +26,68 @@ const Header = () => {
     dispatch({ type: 'COMMIT_PENDING_PIXEL' });
   };
 
-  const handleRefresh = () => {
-    // Reload the canvas from localStorage
-    const savedCanvas = localStorage.getItem('pixelCanvas');
-    if (savedCanvas) {
-      try {
-        const loadedPixels = JSON.parse(savedCanvas);
+  const handleRefresh = async () => {
+    try {
+      // Show loading toast
+      toast({
+        title: "Loading canvas...",
+        description: "Fetching the latest canvas data from the server.",
+      });
+
+      // Fetch the pixels from Supabase
+      const { data, error } = await supabase.from('pixels').select('x, y, color');
+      
+      if (error) {
+        throw error;
+      }
+
+      // Convert the flat array of pixels to our 2D array format
+      if (data && data.length > 0) {
+        // Initialize with black pixels (or whatever starting color you prefer)
+        const canvasSize = state.pixels.length;
+        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
+        
+        // Apply all the pixels from Supabase
+        data.forEach(pixel => {
+          if (pixel.x >= 0 && pixel.x < canvasSize && pixel.y >= 0 && pixel.y < canvasSize) {
+            loadedPixels[pixel.y][pixel.x] = pixel.color;
+          }
+        });
+
+        // Update the canvas state with loaded pixels
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-      } catch (error) {
-        console.error('Failed to reload canvas:', error);
+
+        // Show success toast
+        toast({
+          title: "Canvas loaded!",
+          description: `Successfully loaded ${data.length} pixels from the server.`,
+        });
+      } else {
+        // If no data, we keep the current state but show a message
+        toast({
+          title: "Canvas is empty",
+          description: "No pixel data found on the server.",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to reload canvas:', error);
+      
+      // Show error toast
+      toast({
+        title: "Failed to load canvas",
+        description: "Could not fetch the latest canvas data. Using local data instead.",
+        variant: "destructive",
+      });
+
+      // Fallback to localStorage
+      const savedCanvas = localStorage.getItem('pixelCanvas');
+      if (savedCanvas) {
+        try {
+          const loadedPixels = JSON.parse(savedCanvas);
+          dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+        } catch (error) {
+          console.error('Failed to load from localStorage:', error);
+        }
       }
     }
   };
