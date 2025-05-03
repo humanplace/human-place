@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -10,7 +11,7 @@ const TOAST_REMOVE_DELAY = 2000
 
 type ToasterToast = ToastProps & {
   id: string
-  title?: React.ReactNode
+  title?: React.ReactNode // Change this to ReactNode instead of string
   description?: React.ReactNode
   action?: ToastActionElement
 }
