@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut, Check } from 'lucide-react';
@@ -96,7 +95,8 @@ const Header = () => {
 
         // Show success toast with checkmark icon and no description
         toast({
-          title: (
+          title: "Canvas loaded!",
+          description: (
             <div className="flex items-center gap-2">
               <Check size={18} className="text-green-500" />
               <span>Canvas loaded!</span>
