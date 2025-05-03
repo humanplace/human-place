@@ -87,9 +87,8 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = (x - viewport.startX) * tileSize - viewport.offsetX;
         const pixelY = (y - viewport.startY) * tileSize - viewport.offsetY;
         
-        // Draw the pending pixel
+        // Draw the pending pixel (removed the border drawing)
         drawPixel(ctx, pixelX, pixelY, tileSize, color);
-        drawPendingPixelBorder(ctx, pixelX, pixelY, tileSize);
       }
     }
   }, [state, canvasRef, containerRef]);
