@@ -32,7 +32,7 @@ const PixelCanvas = () => {
         onClick={(e) => handleClick(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchEnd={(e) => handleTouchEnd(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
         className="cursor-pointer"
       />
     </div>
