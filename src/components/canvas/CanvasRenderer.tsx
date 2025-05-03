@@ -4,7 +4,7 @@ import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { 
   calculateViewport, 
   drawPixel, 
-  drawGrid,
+  drawGridLine,
   drawPendingPixelBorder
 } from '@/utils/canvasUtils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -93,6 +93,11 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
           const pixelColor = state.pixels[gridY][gridX];
           drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor!);
           pixelCount++;
+          
+          // Draw grid lines for each tile when zoom level is 16 or higher
+          if (tileSize >= 16) {
+            drawGridLine(ctx, pixelX, pixelY, tileSize);
+          }
         }
       }
     }
@@ -129,16 +134,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
       }
     }
     
-    // Draw the grid LAST - after all pixels and pending pixels
-    // Only for zoom levels 16x and above
-    if (tileSize >= 16) {
-      // Calculate the grid starting position and size
-      const gridStartX = 0;  // Start from the left edge of the visible canvas
-      const gridStartY = 0;  // Start from the top edge of the visible canvas
-      
-      // Draw the grid across the entire visible canvas
-      drawGrid(ctx, gridStartX, gridStartY, containerWidth, containerHeight, tileSize);
-    }
+    // Removed the global grid drawing code that was here previously
   }, [state, canvasRef, containerRef]);
 
   return null;
