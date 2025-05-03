@@ -69,8 +69,8 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelColor = state.pixels[gridY][gridX];
         drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
         
-        // Draw grid lines for zoom levels 8x and above
-        if (tileSize >= 8) {
+        // Draw grid lines for zoom levels 16x and above (changed from 8x)
+        if (tileSize >= 16) {
           drawGridLine(ctx, pixelX, pixelY, tileSize);
         }
       }
