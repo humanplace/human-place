@@ -29,6 +29,9 @@ const Header = () => {
 
   const handleRefresh = async () => {
     try {
+      // Set loading state
+      dispatch({ type: 'SET_LOADING', isLoading: true });
+      
       // Show loading toast
       toast({
         title: "Loading canvas...",
@@ -44,7 +47,7 @@ const Header = () => {
 
       // Convert the flat array of pixels to our 2D array format
       if (data && data.length > 0) {
-        // Create a canvas with default black pixels
+        // Create a canvas with properly initialized pixel values
         const canvasSize = CANVAS_SIZE;
         const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
         
@@ -65,6 +68,7 @@ const Header = () => {
         });
       } else {
         // If no data, show an error message
+        dispatch({ type: 'SET_LOADING', isLoading: false });
         toast({
           title: "Canvas data missing",
           description: "No pixel data found on the server.",
@@ -73,6 +77,9 @@ const Header = () => {
       }
     } catch (error) {
       console.error('Failed to reload canvas:', error);
+      
+      // Set loading to false on error
+      dispatch({ type: 'SET_LOADING', isLoading: false });
       
       // Show error toast
       toast({
@@ -85,14 +92,18 @@ const Header = () => {
 
   return (
     <header className="h-14 flex items-center justify-between px-4 bg-white border-b shadow-sm">
-      <button onClick={handleRefresh} className="p-2">
-        <RefreshCw size={24} />
+      <button 
+        onClick={handleRefresh} 
+        className="p-2"
+        disabled={state.isLoading}
+      >
+        <RefreshCw size={24} className={state.isLoading ? "animate-spin" : ""} />
       </button>
       
       <div className="flex items-center gap-2">
         <button
           onClick={handleZoomOut}
-          disabled={currentZoomIndex === 0}
+          disabled={currentZoomIndex === 0 || state.isLoading}
           className="p-2 disabled:opacity-50"
         >
           <ZoomOut size={24} />
@@ -104,7 +115,7 @@ const Header = () => {
         
         <button
           onClick={handleZoomIn}
-          disabled={currentZoomIndex === ZOOM_LEVELS.length - 1}
+          disabled={currentZoomIndex === ZOOM_LEVELS.length - 1 || state.isLoading}
           className="p-2 disabled:opacity-50"
         >
           <ZoomIn size={24} />
@@ -112,7 +123,7 @@ const Header = () => {
         
         <button
           onClick={handleCommitPixel}
-          disabled={!state.pendingPixel}
+          disabled={!state.pendingPixel || state.isLoading}
           className="ml-2 p-2 disabled:opacity-50"
         >
           <Send size={24} className={state.pendingPixel ? "text-blue-500" : "text-gray-400"} />

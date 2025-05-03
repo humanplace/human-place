@@ -7,6 +7,8 @@ import {
   drawGrid,
   drawPendingPixelBorder
 } from '@/utils/canvasUtils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 
 type CanvasRendererProps = {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -16,9 +18,21 @@ type CanvasRendererProps = {
 const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef }) => {
   const { state } = useCanvas();
 
+  // Display loading indicator when pixels are null or loading is true
+  if (state.isLoading || !state.pixels) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+        <div className="w-48 space-y-4">
+          <h3 className="text-center font-medium">Loading Canvas...</h3>
+          <Progress value={75} className="h-2" />
+        </div>
+      </div>
+    );
+  }
+
   // Render canvas when state changes
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !state.pixels) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -65,7 +79,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = x * tileSize - viewport.offsetX;
         const pixelY = y * tileSize - viewport.offsetY;
         
-        // Draw the pixel - no need to check for null anymore
+        // Draw the pixel
         const pixelColor = state.pixels[gridY][gridX];
         drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
       }
