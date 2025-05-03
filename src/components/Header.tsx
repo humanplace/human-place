@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -34,8 +35,8 @@ const Header = () => {
         description: "Fetching the latest canvas data from the server.",
       });
 
-      // Fetch the pixels from Supabase
-      const { data, error } = await supabase.from('pixels').select('x, y, color');
+      // Fetch the pixels from Supabase - updating from 'pixels' to 'canvas'
+      const { data, error } = await supabase.from('canvas').select('x, y, color');
       
       if (error) {
         throw error;

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -46,9 +45,9 @@ const initialState: CanvasState = {
 // Helper function to update a pixel in Supabase
 async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
   try {
-    // Use upsert to implement "last write wins" logic
+    // Use upsert to implement "last write wins" logic - updating from 'pixels' to 'canvas'
     const { error } = await supabase
-      .from('pixels')
+      .from('canvas')
       .upsert(
         { x, y, color },
         { onConflict: 'x,y' } // The composite primary key columns

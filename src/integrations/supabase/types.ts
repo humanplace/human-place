@@ -9,7 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      pixels: {
+      canvas: {
         Row: {
           color: string
           x: number
