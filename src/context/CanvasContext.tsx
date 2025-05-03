@@ -3,9 +3,9 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 // Canvas dimensions and constants
 export const CANVAS_SIZE = 100;
-export const MAX_ZOOM_LEVEL = 32;
+export const MAX_ZOOM_LEVEL = 64;
 export const MIN_ZOOM_LEVEL = 1;
-export const ZOOM_LEVELS = [1, 2, 4, 8, 16, 32];
+export const ZOOM_LEVELS = [1, 2, 4, 8, 16, 32, 64];
 
 // Color options for the pixel canvas
 export type PixelColor = 'black' | 'white' | 'red' | 'green' | 'yellow' | 'blue' | 'brown' | 'purple' | 'pink' | 'orange' | 'grey';
