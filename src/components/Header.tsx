@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useCanvas, ZOOM_LEVELS } from '@/context/CanvasContext';
+import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -35,7 +35,7 @@ const Header = () => {
         description: "Fetching the latest canvas data from the server.",
       });
 
-      // Fetch the pixels from Supabase - updating from 'pixels' to 'canvas'
+      // Fetch the pixels from Supabase
       const { data, error } = await supabase.from('canvas').select('x, y, color');
       
       if (error) {
@@ -44,9 +44,9 @@ const Header = () => {
 
       // Convert the flat array of pixels to our 2D array format
       if (data && data.length > 0) {
-        // Initialize with black pixels (or whatever starting color you prefer)
-        const canvasSize = state.pixels.length;
-        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill('black'));
+        // Create an empty canvas of the correct size
+        const canvasSize = CANVAS_SIZE;
+        const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill(null));
         
         // Apply all the pixels from Supabase
         data.forEach(pixel => {
@@ -64,10 +64,11 @@ const Header = () => {
           description: `Successfully loaded ${data.length} pixels from the server.`,
         });
       } else {
-        // If no data, we keep the current state but show a message
+        // If no data, show an error message
         toast({
-          title: "Canvas is empty",
+          title: "Canvas data missing",
           description: "No pixel data found on the server.",
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -76,20 +77,11 @@ const Header = () => {
       // Show error toast
       toast({
         title: "Failed to load canvas",
-        description: "Could not fetch the latest canvas data. Using local data instead.",
+        description: "Could not fetch the latest canvas data. Please try again later.",
         variant: "destructive",
       });
 
-      // Fallback to localStorage
-      const savedCanvas = localStorage.getItem('pixelCanvas');
-      if (savedCanvas) {
-        try {
-          const loadedPixels = JSON.parse(savedCanvas);
-          dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-        } catch (error) {
-          console.error('Failed to load from localStorage:', error);
-        }
-      }
+      // No fallback to localStorage - we rely entirely on the database
     }
   };
 

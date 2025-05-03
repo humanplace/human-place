@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -15,7 +16,7 @@ export const COLORS: PixelColor[] = ['black', 'white', 'red', 'green', 'yellow',
 
 // Canvas state interface
 interface CanvasState {
-  pixels: PixelColor[][];
+  pixels: (PixelColor | null)[][];  // Now accepting null for pixels not loaded yet
   pendingPixel: { x: number; y: number; color: PixelColor } | null;
   position: { x: number; y: number };
   zoom: number;
@@ -31,11 +32,11 @@ type CanvasAction =
   | { type: 'SET_POSITION'; x: number; y: number }
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: PixelColor }
-  | { type: 'INITIALIZE_CANVAS'; pixels: PixelColor[][] };
+  | { type: 'INITIALIZE_CANVAS'; pixels: (PixelColor | null)[][] };
 
-// Initial state - Changed to initialize with black pixels instead of white
+// Initial state - empty grid (no default colors), will be populated from the database
 const initialState: CanvasState = {
-  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill('black')),
+  pixels: Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE).fill(null)),
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
   zoom: MIN_ZOOM_LEVEL,
@@ -45,7 +46,7 @@ const initialState: CanvasState = {
 // Helper function to update a pixel in Supabase
 async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
   try {
-    // Use upsert to implement "last write wins" logic - updating from 'pixels' to 'canvas'
+    // Use upsert to implement "last write wins" logic
     const { error } = await supabase
       .from('canvas')
       .upsert(
@@ -59,8 +60,11 @@ async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
     }
   } catch (error) {
     console.error('Error saving pixel to Supabase:', error);
-    // We're not going to block the UI or show an error to the user here
-    // since the pixel is still saved locally, and they can try again later
+    toast({
+      title: "Failed to save pixel",
+      description: "Your pixel couldn't be saved to the server.",
+      variant: "destructive",
+    });
   }
 }
 
@@ -89,19 +93,8 @@ function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
       const { x, y, color } = state.pendingPixel;
       updatedPixels[y][x] = color;
       
-      // Save the canvas to localStorage after committing
-      const canvasData = JSON.stringify(updatedPixels);
-      localStorage.setItem('pixelCanvas', canvasData);
-      
       // Save to Supabase (async, won't block UI)
-      updatePixelInSupabase(x, y, color)
-        .catch((error) => {
-          toast({
-            title: "Failed to save pixel",
-            description: "Your pixel was saved locally but not on the server. Try refreshing later.",
-            variant: "destructive",
-          });
-        });
+      updatePixelInSupabase(x, y, color);
       
       return {
         ...state,
@@ -151,22 +144,37 @@ const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(canvasReducer, initialState);
   
-  // Load canvas data from localStorage on mount
+  // Load canvas data from Supabase on mount
   useEffect(() => {
-    const loadCanvasData = () => {
+    const loadCanvasData = async () => {
       try {
-        const savedCanvas = localStorage.getItem('pixelCanvas');
-        if (savedCanvas) {
-          const loadedPixels = JSON.parse(savedCanvas) as PixelColor[][];
-          // Verify the loaded data is valid
-          if (Array.isArray(loadedPixels) && 
-              loadedPixels.length === CANVAS_SIZE && 
-              loadedPixels[0].length === CANVAS_SIZE) {
-            dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-          }
+        // Fetch the pixels from Supabase
+        const { data, error } = await supabase.from('canvas').select('x, y, color');
+        
+        if (error) {
+          throw error;
+        }
+
+        // If data exists, convert the flat array of pixels to our 2D array format
+        if (data && data.length > 0) {
+          // Create an empty canvas of the correct size
+          const canvasSize = CANVAS_SIZE;
+          const loadedPixels = Array(canvasSize).fill(null).map(() => Array(canvasSize).fill(null));
+          
+          // Apply all the pixels from Supabase
+          data.forEach(pixel => {
+            if (pixel.x >= 0 && pixel.x < canvasSize && pixel.y >= 0 && pixel.y < canvasSize) {
+              loadedPixels[pixel.y][pixel.x] = pixel.color as PixelColor;
+            }
+          });
+
+          // Update the canvas state with loaded pixels
+          dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
         }
       } catch (error) {
         console.error('Failed to load canvas data:', error);
+        // We won't show a toast here as this happens on initial load
+        // and we don't want to annoy the user if there's a network issue
       }
     };
     

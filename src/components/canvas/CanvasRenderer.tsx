@@ -65,8 +65,8 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = x * tileSize - viewport.offsetX;
         const pixelY = y * tileSize - viewport.offsetY;
         
-        // Draw the actual pixel
-        const pixelColor = state.pixels[gridY][gridX];
+        // Draw the actual pixel - use black as default if the pixel is null
+        const pixelColor = state.pixels[gridY][gridX] || 'black';
         drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
       }
     }
