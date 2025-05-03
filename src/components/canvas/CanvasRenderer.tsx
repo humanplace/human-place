@@ -8,7 +8,7 @@ import {
   drawPendingPixelBorder
 } from '@/utils/canvasUtils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
+import { LoaderCircle } from 'lucide-react';
 
 type CanvasRendererProps = {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -22,9 +22,9 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
   if (state.isLoading || !state.pixels) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
-        <div className="w-48 space-y-4">
+        <div className="w-48 space-y-4 flex flex-col items-center">
           <h3 className="text-center font-medium">Loading Canvas...</h3>
-          <Progress value={75} className="h-2" />
+          <LoaderCircle size={40} className="animate-spin text-primary" />
         </div>
       </div>
     );
