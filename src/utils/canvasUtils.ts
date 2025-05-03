@@ -1,3 +1,4 @@
+
 import { PixelColor } from "@/context/CanvasContext";
 
 // Draw a pixel on the canvas
@@ -33,29 +34,36 @@ export const drawGrid = (
   height: number,
   tileSize: number
 ) => {
-  // Use a consistent color for all grid lines
+  // Disable anti-aliasing for crisp lines
+  ctx.imageSmoothingEnabled = false;
+  
+  // Use a fully opaque color for grid lines
   ctx.lineWidth = 1;
-  ctx.strokeStyle = '#DDDDDD';
+  ctx.strokeStyle = 'rgba(221, 221, 221, 1.0)';
   
   // Start at the first visible tile boundary
   const startDrawX = startX;
   const startDrawY = startY;
   
-  // Draw vertical lines
+  // Draw all vertical lines in a single path
+  ctx.beginPath();
   for (let x = 0; x <= width; x += tileSize) {
-    ctx.beginPath();
-    ctx.moveTo(startDrawX + x, startDrawY);
-    ctx.lineTo(startDrawX + x, startDrawY + height);
-    ctx.stroke();
+    // Use 0.5 offset for crisp 1px lines
+    const xPos = Math.floor(startDrawX + x) + 0.5;
+    ctx.moveTo(xPos, startDrawY);
+    ctx.lineTo(xPos, startDrawY + height);
   }
+  ctx.stroke();
   
-  // Draw horizontal lines
+  // Draw all horizontal lines in a single path
+  ctx.beginPath();
   for (let y = 0; y <= height; y += tileSize) {
-    ctx.beginPath();
-    ctx.moveTo(startDrawX, startDrawY + y);
-    ctx.lineTo(startDrawX + width, startDrawY + y);
-    ctx.stroke();
+    // Use 0.5 offset for crisp 1px lines
+    const yPos = Math.floor(startDrawY + y) + 0.5;
+    ctx.moveTo(startDrawX, yPos);
+    ctx.lineTo(startDrawX + width, yPos);
   }
+  ctx.stroke();
 };
 
 // Draw a highlight border around a pending pixel
