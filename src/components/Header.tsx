@@ -27,6 +27,46 @@ const Header = () => {
     dispatch({ type: 'COMMIT_PENDING_PIXEL' });
   };
 
+  // Helper function to fetch all canvas pixels from Supabase
+  const fetchAllCanvasPixels = async () => {
+    const pixels = [];
+    let page = 0;
+    const pageSize = 1000; // Supabase default page size
+    let hasMoreData = true;
+
+    try {
+      while (hasMoreData) {
+        // Fetch one page of pixels
+        const { data, error } = await supabase
+          .from('canvas')
+          .select('x, y, color')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+          
+        if (error) {
+          throw error;
+        }
+
+        // Add the pixels to our result
+        if (data && data.length > 0) {
+          pixels.push(...data);
+          page++;
+          
+          // If we got fewer records than the page size, we've reached the end
+          hasMoreData = data.length === pageSize;
+        } else {
+          // No more data
+          hasMoreData = false;
+        }
+      }
+      
+      console.log(`Total pixels fetched on refresh: ${pixels.length}`);
+      return pixels;
+    } catch (error) {
+      console.error('Error fetching all canvas pixels:', error);
+      throw error;
+    }
+  };
+
   const handleRefresh = async () => {
     try {
       // Set loading state
@@ -38,15 +78,12 @@ const Header = () => {
         description: "Fetching the latest canvas data from the server.",
       });
 
-      // Fetch the pixels from Supabase
-      const { data, error } = await supabase.from('canvas').select('x, y, color');
+      // Fetch all the pixels from Supabase using our pagination helper
+      const data = await fetchAllCanvasPixels();
       
-      if (error) {
-        throw error;
-      }
-
-      // Convert the flat array of pixels to our sparse format
-      // Instead of initializing with black pixels, we'll just create a sparse array with only the pixels from the database
+      // Log how many pixels we received
+      console.log(`Refresh: fetched ${data.length} pixels`);
+      
       if (data && data.length > 0) {
         // Create a sparse canvas without filling with any default color
         const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));

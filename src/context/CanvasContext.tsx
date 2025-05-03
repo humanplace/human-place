@@ -153,6 +153,45 @@ interface CanvasContextType {
 
 const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 
+// Helper function to fetch all canvas pixels from Supabase
+async function fetchAllCanvasPixels() {
+  const pixels: { x: number, y: number, color: PixelColor }[] = [];
+  let page = 0;
+  const pageSize = 1000; // Supabase default page size
+  let hasMoreData = true;
+
+  try {
+    // Loop until we've fetched all pixels
+    while (hasMoreData) {
+      const { data, error, count } = await supabase
+        .from('canvas')
+        .select('x, y, color', { count: 'exact' })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        pixels.push(...data as { x: number, y: number, color: PixelColor }[]);
+        page++;
+        
+        // If we got fewer records than the page size, we've reached the end
+        hasMoreData = data.length === pageSize;
+      } else {
+        // No more data
+        hasMoreData = false;
+      }
+    }
+
+    console.log(`Total pixels fetched: ${pixels.length}`);
+    return pixels;
+  } catch (error) {
+    console.error('Error fetching all canvas pixels:', error);
+    throw error;
+  }
+}
+
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(canvasReducer, initialState);
@@ -164,13 +203,11 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         // Set loading state to true
         dispatch({ type: 'SET_LOADING', isLoading: true });
         
-        // Fetch the pixels from Supabase
-        const { data, error } = await supabase.from('canvas').select('x, y, color');
-        
-        if (error) {
-          throw error;
-        }
+        // Fetch ALL the pixels from Supabase using our helper function
+        const data = await fetchAllCanvasPixels();
 
+        console.log(`Successfully fetched ${data.length} pixels`);
+        
         // If data exists, convert the flat array of pixels to our sparse format
         if (data && data.length > 0) {
           // Create a sparse canvas without filling with default colors
