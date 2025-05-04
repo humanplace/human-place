@@ -21,7 +21,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
   // Display loading indicator when pixels are null or loading is true
   if (state.isLoading || !state.pixels) {
     return (
-      <div className="relative flex flex-col items-center justify-center bg-white w-full h-full">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white w-full h-full">
         <div className="w-48 space-y-4 flex flex-col items-center">
           <h3 className="text-center font-medium">Loading Canvas...</h3>
           <LoaderCircle size={40} className="animate-spin text-primary" />
@@ -147,3 +147,4 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
 };
 
 export default CanvasRenderer;
+

@@ -20,7 +20,7 @@ const PixelCanvas = () => {
   return (
     <div 
       ref={containerRef} 
-      className="w-full h-full overflow-hidden touch-none flex items-center justify-center"
+      className="w-full h-full overflow-hidden touch-none flex items-center justify-center relative"
       style={{ border: "1px solid #ddd", background: '#fff' }}
     >
       <CanvasRenderer 
@@ -40,3 +40,4 @@ const PixelCanvas = () => {
 };
 
 export default PixelCanvas;
+
