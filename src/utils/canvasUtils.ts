@@ -58,7 +58,7 @@ export const drawOuterBorder = (
 ) => {
   // Use a darker color for better visibility
   const borderColor = '#333333';
-  const borderWidth = 2; // Slightly thicker than grid lines
+  const borderWidth = 1; // Changed from 2px to 1px
   
   ctx.fillStyle = borderColor;
   
