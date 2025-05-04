@@ -4,7 +4,8 @@ import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { 
   calculateViewport, 
   drawPixel, 
-  drawGridLine
+  drawGridLine,
+  drawOuterBorder
 } from '@/utils/canvasUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoaderCircle } from 'lucide-react';
@@ -93,12 +94,15 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
           const pixelColor = state.pixels[gridY][gridX] as ColorCode;
           drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
           pixelCount++;
-          
-          // Draw grid lines for each tile when zoom level is 16 or higher
-          if (tileSize >= 16) {
-            drawGridLine(ctx, pixelX, pixelY, tileSize);
-          }
         }
+        
+        // Draw grid lines for each tile when zoom level is 16 or higher
+        if (tileSize >= 16) {
+          drawGridLine(ctx, pixelX, pixelY, tileSize);
+        }
+        
+        // Always draw the outer border for edge tiles, regardless of zoom level
+        drawOuterBorder(ctx, pixelX, pixelY, tileSize, gridX, gridY, CANVAS_SIZE);
       }
     }
     

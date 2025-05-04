@@ -46,6 +46,43 @@ export const drawGridLine = (
   ctx.fillRect(x, y, lineWidth, size);
 };
 
+// Draw a border for the outer edge tiles (x=0,y=0 and x=99,y=99)
+export const drawOuterBorder = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  gridX: number,
+  gridY: number,
+  canvasSize: number
+) => {
+  // Use a darker color for better visibility
+  const borderColor = '#333333';
+  const borderWidth = 2; // Slightly thicker than grid lines
+  
+  ctx.fillStyle = borderColor;
+  
+  // Left border for x=0
+  if (gridX === 0) {
+    ctx.fillRect(x, y, borderWidth, size);
+  }
+  
+  // Top border for y=0
+  if (gridY === 0) {
+    ctx.fillRect(x, y, size, borderWidth);
+  }
+  
+  // Right border for x=canvasSize-1 (99)
+  if (gridX === canvasSize - 1) {
+    ctx.fillRect(x + size - borderWidth, y, borderWidth, size);
+  }
+  
+  // Bottom border for y=canvasSize-1 (99)
+  if (gridY === canvasSize - 1) {
+    ctx.fillRect(x, y + size - borderWidth, size, borderWidth);
+  }
+};
+
 // Draw a highlight border around a pending pixel
 export const drawPendingPixelBorder = (
   ctx: CanvasRenderingContext2D,
