@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -25,6 +24,11 @@ const Header = () => {
 
   const handleCommitPixel = () => {
     dispatch({ type: 'COMMIT_PENDING_PIXEL' });
+    
+    // Add toast notification when pixel is successfully placed
+    toast({
+      title: "🎨 Pixel Placed!",
+    });
   };
 
   // Helper function to fetch all canvas pixels from Supabase
