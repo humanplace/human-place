@@ -62,24 +62,24 @@ export const drawOuterBorder = (
   
   ctx.fillStyle = borderColor;
   
-  // Left border for x=0
+  // Left border for x=0 - draw OUTSIDE the tile
   if (gridX === 0) {
-    ctx.fillRect(x, y, borderWidth, size);
+    ctx.fillRect(x - borderWidth, y - borderWidth, borderWidth, size + (2 * borderWidth));
   }
   
-  // Top border for y=0
+  // Top border for y=0 - draw OUTSIDE the tile
   if (gridY === 0) {
-    ctx.fillRect(x, y, size, borderWidth);
+    ctx.fillRect(x - borderWidth, y - borderWidth, size + (2 * borderWidth), borderWidth);
   }
   
-  // Right border for x=canvasSize-1 (99)
+  // Right border for x=canvasSize-1 (99) - draw OUTSIDE the tile
   if (gridX === canvasSize - 1) {
-    ctx.fillRect(x + size - borderWidth, y, borderWidth, size);
+    ctx.fillRect(x + size, y - borderWidth, borderWidth, size + (2 * borderWidth));
   }
   
-  // Bottom border for y=canvasSize-1 (99)
+  // Bottom border for y=canvasSize-1 (99) - draw OUTSIDE the tile
   if (gridY === canvasSize - 1) {
-    ctx.fillRect(x, y + size - borderWidth, size, borderWidth);
+    ctx.fillRect(x - borderWidth, y + size, size + (2 * borderWidth), borderWidth);
   }
 };
 
