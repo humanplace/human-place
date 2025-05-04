@@ -1,0 +1,68 @@
+
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { PixelColor } from './canvasTypes';
+
+// Helper function to update a pixel in Supabase
+export async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
+  try {
+    // Use upsert to implement "last write wins" logic
+    const { error } = await supabase
+      .from('canvas')
+      .upsert(
+        { x, y, color },
+        { onConflict: 'x,y' } // The composite primary key columns
+      );
+    
+    if (error) {
+      console.error('Failed to save pixel to Supabase:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error saving pixel to Supabase:', error);
+    toast({
+      title: "Failed to save pixel",
+      description: "Your pixel couldn't be saved to the server.",
+      variant: "destructive",
+    });
+  }
+}
+
+// Helper function to fetch all canvas pixels from Supabase
+export async function fetchAllCanvasPixels() {
+  const pixels: { x: number, y: number, color: PixelColor }[] = [];
+  let page = 0;
+  const pageSize = 1000; // Supabase default page size
+  let hasMoreData = true;
+
+  try {
+    // Loop until we've fetched all pixels
+    while (hasMoreData) {
+      const { data, error, count } = await supabase
+        .from('canvas')
+        .select('x, y, color', { count: 'exact' })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        pixels.push(...data as { x: number, y: number, color: PixelColor }[]);
+        page++;
+        
+        // If we got fewer records than the page size, we've reached the end
+        hasMoreData = data.length === pageSize;
+      } else {
+        // No more data
+        hasMoreData = false;
+      }
+    }
+
+    console.log(`Total pixels fetched: ${pixels.length}`);
+    return pixels;
+  } catch (error) {
+    console.error('Error fetching all canvas pixels:', error);
+    throw error;
+  }
+}
