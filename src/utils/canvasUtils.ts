@@ -46,47 +46,6 @@ export const drawGridLine = (
   ctx.fillRect(x, y, lineWidth, size);
 };
 
-// Draw the entire grid at once to avoid overlapping lines
-export const drawGrid = (
-  ctx: CanvasRenderingContext2D,
-  startX: number,
-  startY: number,
-  width: number,
-  height: number,
-  tileSize: number
-) => {
-  // Disable anti-aliasing for crisp lines
-  ctx.imageSmoothingEnabled = false;
-  
-  // Use a fully opaque color for grid lines
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(221, 221, 221, 1.0)';
-  
-  // Start at the first visible tile boundary
-  const startDrawX = startX;
-  const startDrawY = startY;
-  
-  // Draw all vertical lines in a single path
-  ctx.beginPath();
-  for (let x = 0; x <= width; x += tileSize) {
-    // Use 0.5 offset for crisp 1px lines
-    const xPos = Math.floor(startDrawX + x) + 0.5;
-    ctx.moveTo(xPos, startDrawY);
-    ctx.lineTo(xPos, startDrawY + height);
-  }
-  ctx.stroke();
-  
-  // Draw all horizontal lines in a single path
-  ctx.beginPath();
-  for (let y = 0; y <= height; y += tileSize) {
-    // Use 0.5 offset for crisp 1px lines
-    const yPos = Math.floor(startDrawY + y) + 0.5;
-    ctx.moveTo(startDrawX, yPos);
-    ctx.lineTo(startDrawX + width, yPos);
-  }
-  ctx.stroke();
-};
-
 // Draw a highlight border around a pending pixel
 export const drawPendingPixelBorder = (
   ctx: CanvasRenderingContext2D,
