@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -91,10 +92,9 @@ const Header = () => {
         // Update the canvas state with loaded pixels
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
 
-        // Show success toast
+        // Show success toast with title only
         toast({
           title: "Canvas loaded!",
-          description: `Successfully loaded ${data.length} pixels from the server.`,
         });
       } else {
         // If no data, show an error message

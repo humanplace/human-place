@@ -223,6 +223,11 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
           // Update the canvas state with loaded pixels
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+          
+          // Show success toast with title only
+          toast({
+            title: "Canvas loaded!",
+          });
         } else {
           // If no data, show an error message
           toast({
