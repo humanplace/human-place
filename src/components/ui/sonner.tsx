@@ -14,6 +14,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       position="top-center"
       duration={2000}
       offset="56px" // Positions below the header (14 rem = 56px)
+      closeButton={false} // Remove close button for Sonner toasts
       toastOptions={{
         classNames: {
           toast:
