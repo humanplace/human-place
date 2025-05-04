@@ -27,8 +27,8 @@ export const drawGridLine = (
   // Set composite operation to ensure full replacement
   ctx.globalCompositeOperation = 'source-over';
   
-  // Use a darker color for better visibility
-  const gridColor = '#333333';
+  // Updated grid color to match header/footer (#ddd)
+  const gridColor = '#ddd';
   
   // Use exact pixel coordinates
   const roundedX = Math.round(x);
@@ -157,3 +157,4 @@ export const calculateViewport = (
     offsetY 
   };
 };
+
