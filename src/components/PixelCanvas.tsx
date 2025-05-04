@@ -18,26 +18,32 @@ const PixelCanvas = () => {
   } = useCanvasInteraction();
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full overflow-hidden touch-none flex items-center justify-center relative"
-      style={{ border: "1px solid #ddd", background: '#fff' }}
-    >
-      <CanvasRenderer 
-        containerRef={containerRef} 
-        canvasRef={canvasRef} 
-      />
-      <canvas
-        ref={canvasRef}
-        onClick={(e) => handleClick(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={(e) => handleTouchEnd(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
-        className="cursor-pointer"
-      />
+    <div className="w-full h-full flex items-center justify-center p-4">
+      <div 
+        className="border-2 border-[#333333]"
+        style={{ width: "95%", height: "95%" }}
+      >
+        <div 
+          ref={containerRef} 
+          className="w-full h-full overflow-hidden touch-none flex items-center justify-center relative"
+          style={{ background: '#fff' }}
+        >
+          <CanvasRenderer 
+            containerRef={containerRef} 
+            canvasRef={canvasRef} 
+          />
+          <canvas
+            ref={canvasRef}
+            onClick={(e) => handleClick(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={(e) => handleTouchEnd(e, canvasRef.current?.getBoundingClientRect() || new DOMRect())}
+            className="cursor-pointer"
+          />
+        </div>
+      </div>
     </div>
   );
 };
 
 export default PixelCanvas;
-
