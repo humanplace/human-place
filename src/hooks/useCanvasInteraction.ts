@@ -1,3 +1,4 @@
+
 import { useRef, useState } from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { ColorCode } from '@/context/canvasTypes';
@@ -34,7 +35,7 @@ export const useCanvasInteraction = () => {
     const viewportStartX = state.position.x - (tilesWide / 2);
     const viewportStartY = state.position.y - (tilesHigh / 2);
     
-    // Convert from screen space to grid space
+    // Convert from screen space to grid space - use Math.floor for consistent grid alignment
     const gridX = Math.floor(viewportStartX + (canvasX / tileSize));
     const gridY = Math.floor(viewportStartY + (canvasY / tileSize));
     
@@ -106,6 +107,7 @@ export const useCanvasInteraction = () => {
     touchInfo.current.lastTouchY = touch.clientY;
     
     // Calculate new position (move in opposite direction of drag)
+    // Use precise calculations without early rounding
     const newX = state.position.x - (deltaX / tileSize);
     const newY = state.position.y - (deltaY / tileSize);
     

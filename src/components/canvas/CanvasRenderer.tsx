@@ -36,7 +36,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
     if (!canvasRef.current || !state.pixels) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     // Calculate tile size in pixels
@@ -73,8 +73,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
     // Count how many pixels we're rendering to check if we're using the full dataset
     let pixelCount = 0;
     
-    // Draw the pixels
-    // Expand the rendering loop slightly to ensure we cover the whole visible area
+    // Draw the pixels - Expand the rendering loop slightly to ensure we cover the whole visible area
     for (let y = 0; y <= viewport.tilesHigh + 1; y++) {
       for (let x = 0; x <= viewport.tilesWide + 1; x++) {
         const gridX = viewport.startX + x;
@@ -85,9 +84,10 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
           continue;
         }
         
-        // Calculate pixel position on screen
-        const pixelX = Math.floor(x * tileSize - viewport.offsetX);
-        const pixelY = Math.floor(y * tileSize - viewport.offsetY);
+        // Calculate pixel position on screen with precise coordinates
+        // Use exact mathematical position without early rounding to prevent misalignment
+        const pixelX = x * tileSize - viewport.offsetX;
+        const pixelY = y * tileSize - viewport.offsetY;
         
         // Draw the pixel only if it has a color (not undefined)
         if (state.pixels[gridY] && state.pixels[gridY][gridX] !== undefined) {

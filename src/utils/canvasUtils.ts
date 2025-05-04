@@ -10,7 +10,8 @@ export const drawPixel = (
   color: ColorCode
 ) => {
   ctx.fillStyle = getColorHex(color);
-  ctx.fillRect(x, y, size, size);
+  // Use exact pixel coordinates without rounding
+  ctx.fillRect(Math.round(x), Math.round(y), size, size);
 };
 
 // Draw a grid line around a pixel (for zoom levels 8x and above)
@@ -29,21 +30,25 @@ export const drawGridLine = (
   // Use a darker color for better visibility
   const gridColor = '#333333';
   
-  // Draw four separate filled rectangles for each border
+  // Use exact pixel coordinates
+  const roundedX = Math.round(x);
+  const roundedY = Math.round(y);
   const lineWidth = 1;
   
-  // Top border
+  // Draw four separate filled rectangles for each border
   ctx.fillStyle = gridColor;
-  ctx.fillRect(x, y, size, lineWidth);
+  
+  // Top border
+  ctx.fillRect(roundedX, roundedY, size, lineWidth);
   
   // Right border
-  ctx.fillRect(x + size - lineWidth, y, lineWidth, size);
+  ctx.fillRect(roundedX + size - lineWidth, roundedY, lineWidth, size);
   
   // Bottom border
-  ctx.fillRect(x, y + size - lineWidth, size, lineWidth);
+  ctx.fillRect(roundedX, roundedY + size - lineWidth, size, lineWidth);
   
   // Left border
-  ctx.fillRect(x, y, lineWidth, size);
+  ctx.fillRect(roundedX, roundedY, lineWidth, size);
 };
 
 // Draw a border for the outer edge tiles (x=0,y=0 and x=99,y=99)
@@ -58,28 +63,32 @@ export const drawOuterBorder = (
 ) => {
   // Use a darker color for better visibility
   const borderColor = '#333333';
-  const borderWidth = 1; // Changed from 2px to 1px
+  const borderWidth = 1;
+  
+  // Use exact pixel coordinates
+  const roundedX = Math.round(x);
+  const roundedY = Math.round(y);
   
   ctx.fillStyle = borderColor;
   
   // Left border for x=0 - draw OUTSIDE the tile
   if (gridX === 0) {
-    ctx.fillRect(x - borderWidth, y - borderWidth, borderWidth, size + (2 * borderWidth));
+    ctx.fillRect(roundedX - borderWidth, roundedY - borderWidth, borderWidth, size + (2 * borderWidth));
   }
   
   // Top border for y=0 - draw OUTSIDE the tile
   if (gridY === 0) {
-    ctx.fillRect(x - borderWidth, y - borderWidth, size + (2 * borderWidth), borderWidth);
+    ctx.fillRect(roundedX - borderWidth, roundedY - borderWidth, size + (2 * borderWidth), borderWidth);
   }
   
   // Right border for x=canvasSize-1 (99) - draw OUTSIDE the tile
   if (gridX === canvasSize - 1) {
-    ctx.fillRect(x + size, y - borderWidth, borderWidth, size + (2 * borderWidth));
+    ctx.fillRect(roundedX + size, roundedY - borderWidth, borderWidth, size + (2 * borderWidth));
   }
   
   // Bottom border for y=canvasSize-1 (99) - draw OUTSIDE the tile
   if (gridY === canvasSize - 1) {
-    ctx.fillRect(x - borderWidth, y + size, size + (2 * borderWidth), borderWidth);
+    ctx.fillRect(roundedX - borderWidth, roundedY + size, size + (2 * borderWidth), borderWidth);
   }
 };
 
@@ -92,7 +101,7 @@ export const drawPendingPixelBorder = (
 ) => {
   ctx.lineWidth = 2;
   ctx.strokeStyle = '#000000';
-  ctx.strokeRect(x, y, size, size);
+  ctx.strokeRect(Math.round(x), Math.round(y), size, size);
 };
 
 // Helper function to convert color names to hex values
@@ -126,8 +135,8 @@ export const calculateViewport = (
   tileSize: number
 ) => {
   // Calculate how many tiles can fit in the container
-  const tilesWide = Math.ceil(containerWidth / tileSize) + 1; // Add 1 extra tile to prevent gaps
-  const tilesHigh = Math.ceil(containerHeight / tileSize) + 1; // Add 1 extra tile to prevent gaps
+  const tilesWide = Math.ceil(containerWidth / tileSize) + 1;
+  const tilesHigh = Math.ceil(containerHeight / tileSize) + 1;
   
   // Calculate the top-left corner of the viewport in grid coordinates
   // Center the view on the position coordinates
@@ -135,14 +144,15 @@ export const calculateViewport = (
   const startY = position.y - (tilesHigh / 2);
   
   // Calculate pixel offset for smooth panning (decimal part of the starting position)
+  // Use precise decimal values without early rounding
   const offsetX = (startX - Math.floor(startX)) * tileSize;
   const offsetY = (startY - Math.floor(startY)) * tileSize;
   
   return { 
     tilesWide, 
     tilesHigh, 
-    startX: Math.floor(startX),  // Floor to get the integer grid position
-    startY: Math.floor(startY),  // Floor to get the integer grid position
+    startX: Math.floor(startX),
+    startY: Math.floor(startY),
     offsetX, 
     offsetY 
   };
