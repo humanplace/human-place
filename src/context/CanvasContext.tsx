@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
@@ -47,10 +48,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           // Update the canvas state with loaded pixels
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
           
-          // Updated toast message with checkmark emoji
-          toast({
-            title: "✅ Canvas refreshed!",
-          });
+          // Toast notification removed from here
         } else {
           // If no data, show an error message
           toast({
