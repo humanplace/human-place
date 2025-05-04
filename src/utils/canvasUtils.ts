@@ -1,5 +1,5 @@
 
-import { PixelColor } from "@/context/CanvasContext";
+import { ColorCode, COLOR_NAME_MAP } from "@/context/canvasTypes";
 
 // Draw a pixel on the canvas
 export const drawPixel = (
@@ -7,7 +7,7 @@ export const drawPixel = (
   x: number,
   y: number,
   size: number,
-  color: PixelColor
+  color: ColorCode
 ) => {
   ctx.fillStyle = getColorHex(color);
   ctx.fillRect(x, y, size, size);
@@ -100,21 +100,26 @@ export const drawPendingPixelBorder = (
 };
 
 // Helper function to convert color names to hex values
-export const getColorHex = (color: PixelColor): string => {
+export const getColorHex = (color: ColorCode): string => {
   switch(color) {
-    case 'black': return '#000000';
-    case 'white': return '#FFFFFF';
-    case 'red': return '#FF4500';
-    case 'green': return '#00A550';
-    case 'yellow': return '#FFD635';
-    case 'blue': return '#3690EA';
-    case 'brown': return '#6D482F';
-    case 'purple': return '#9C51B6';
-    case 'pink': return '#FF99AA';
-    case 'orange': return '#FFA800';
-    case 'grey': return '#898D90';
-    default: return '#FFFFFF';
+    case 0: return '#000000'; // black
+    case 1: return '#FFFFFF'; // white
+    case 2: return '#FF4500'; // red
+    case 3: return '#00A550'; // green
+    case 4: return '#FFD635'; // yellow
+    case 5: return '#3690EA'; // blue
+    case 6: return '#6D482F'; // brown
+    case 7: return '#9C51B6'; // purple
+    case 8: return '#FF99AA'; // pink
+    case 9: return '#FFA800'; // orange
+    case 10: return '#898D90'; // grey
+    default: return '#FFFFFF'; // fallback to white
   }
+};
+
+// Helper function to get color name from code (for accessibility and logging)
+export const getColorName = (colorCode: ColorCode): string => {
+  return COLOR_NAME_MAP[colorCode];
 };
 
 // Calculate viewport settings based on container and zoom

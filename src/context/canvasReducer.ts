@@ -1,4 +1,3 @@
-
 import { CanvasState, CanvasAction } from './canvasTypes';
 import { updatePixelInSupabase } from './canvasUtils';
 import { CANVAS_SIZE } from './canvasTypes';
@@ -9,8 +8,8 @@ export const initialState: CanvasState = {
   isLoading: true,  // Start in loading state
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
-  zoom: 1, // MIN_ZOOM_LEVEL,
-  selectedColor: 'black'
+  zoom: 1,
+  selectedColor: 0 // Default to black (0)
 };
 
 // Reducer function to handle all canvas-related actions

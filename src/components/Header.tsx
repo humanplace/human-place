@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { ColorCode } from '@/context/canvasTypes';
 
 const Header = () => {
   const { state, dispatch } = useCanvas();
@@ -34,7 +34,7 @@ const Header = () => {
 
   // Helper function to fetch all canvas pixels from Supabase
   const fetchAllCanvasPixels = async () => {
-    const pixels = [];
+    const pixels: { x: number, y: number, color: ColorCode }[] = [];
     let page = 0;
     const pageSize = 1000; // Supabase default page size
     let hasMoreData = true;
@@ -53,7 +53,7 @@ const Header = () => {
 
         // Add the pixels to our result
         if (data && data.length > 0) {
-          pixels.push(...data);
+          pixels.push(...data as { x: number, y: number, color: ColorCode }[]);
           page++;
           
           // If we got fewer records than the page size, we've reached the end

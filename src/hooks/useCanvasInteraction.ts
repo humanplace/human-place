@@ -1,6 +1,6 @@
-
 import { useRef, useState } from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
+import { ColorCode } from '@/context/canvasTypes';
 
 export const useCanvasInteraction = () => {
   const { state, dispatch } = useCanvas();

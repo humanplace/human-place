@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { PixelColor } from './canvasTypes';
+import { ColorCode } from './canvasTypes';
 
 // Helper function to update a pixel in Supabase
-export async function updatePixelInSupabase(x: number, y: number, color: PixelColor) {
+export async function updatePixelInSupabase(x: number, y: number, color: ColorCode) {
   try {
     // Use upsert to implement "last write wins" logic
     const { error } = await supabase
@@ -30,7 +30,7 @@ export async function updatePixelInSupabase(x: number, y: number, color: PixelCo
 
 // Helper function to fetch all canvas pixels from Supabase
 export async function fetchAllCanvasPixels() {
-  const pixels: { x: number, y: number, color: PixelColor }[] = [];
+  const pixels: { x: number, y: number, color: ColorCode }[] = [];
   let page = 0;
   const pageSize = 1000; // Supabase default page size
   let hasMoreData = true;
@@ -38,9 +38,9 @@ export async function fetchAllCanvasPixels() {
   try {
     // Loop until we've fetched all pixels
     while (hasMoreData) {
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from('canvas')
-        .select('x, y, color', { count: 'exact' })
+        .select('x, y, color')
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) {
@@ -48,7 +48,7 @@ export async function fetchAllCanvasPixels() {
       }
 
       if (data && data.length > 0) {
-        pixels.push(...data as { x: number, y: number, color: PixelColor }[]);
+        pixels.push(...data as { x: number, y: number, color: ColorCode }[]);
         page++;
         
         // If we got fewer records than the page size, we've reached the end

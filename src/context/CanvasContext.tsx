@@ -3,11 +3,12 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
 import { fetchAllCanvasPixels } from './canvasUtils';
-import { CanvasState, CanvasAction, CANVAS_SIZE, ZOOM_LEVELS } from './canvasTypes';
+import { CanvasState, CanvasAction, CANVAS_SIZE, ZOOM_LEVELS, COLOR_NAME_MAP } from './canvasTypes';
+import { ColorCode } from './canvasTypes';
 
 // Export necessary types and constants from the types file
-export { CANVAS_SIZE, MAX_ZOOM_LEVEL, MIN_ZOOM_LEVEL, ZOOM_LEVELS, COLORS } from './canvasTypes';
-export type { PixelColor } from './canvasTypes';
+export { CANVAS_SIZE, MAX_ZOOM_LEVEL, MIN_ZOOM_LEVEL, ZOOM_LEVELS, COLORS, COLOR_NAME_MAP } from './canvasTypes';
+export type { ColorCode } from './canvasTypes';
 
 // Create the context
 interface CanvasContextType {

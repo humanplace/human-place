@@ -11,17 +11,17 @@ export type Database = {
     Tables: {
       canvas: {
         Row: {
-          color: string
+          color: number
           x: number
           y: number
         }
         Insert: {
-          color: string
+          color: number
           x: number
           y: number
         }
         Update: {
-          color?: string
+          color?: number
           x?: number
           y?: number
         }

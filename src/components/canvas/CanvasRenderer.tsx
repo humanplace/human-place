@@ -4,11 +4,11 @@ import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { 
   calculateViewport, 
   drawPixel, 
-  drawGridLine,
-  drawPendingPixelBorder
+  drawGridLine
 } from '@/utils/canvasUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoaderCircle } from 'lucide-react';
+import { ColorCode } from '@/context/canvasTypes';
 
 type CanvasRendererProps = {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -90,8 +90,8 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         
         // Draw the pixel only if it has a color (not undefined)
         if (state.pixels[gridY] && state.pixels[gridY][gridX] !== undefined) {
-          const pixelColor = state.pixels[gridY][gridX];
-          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor!);
+          const pixelColor = state.pixels[gridY][gridX] as ColorCode;
+          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
           pixelCount++;
           
           // Draw grid lines for each tile when zoom level is 16 or higher
@@ -133,18 +133,11 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         if (tileSize >= 16) {
           drawGridLine(ctx, screenX, screenY, tileSize);
         }
-        
-        // We're no longer drawing the border highlight for pending pixels
-        // The line below is commented out to remove the 2px border
-        // drawPendingPixelBorder(ctx, screenX, screenY, tileSize);
       }
     }
-    
-    // Removed the global grid drawing code that was here previously
   }, [state, canvasRef, containerRef]);
 
   return null;
 };
 
 export default CanvasRenderer;
-
