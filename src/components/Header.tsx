@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -72,12 +71,6 @@ const Header = () => {
       // Set loading state
       dispatch({ type: 'SET_LOADING', isLoading: true });
       
-      // Show loading toast
-      toast({
-        title: "Loading canvas...",
-        description: "Fetching the latest canvas data from the server.",
-      });
-
       // Fetch all the pixels from Supabase using our pagination helper
       const data = await fetchAllCanvasPixels();
       

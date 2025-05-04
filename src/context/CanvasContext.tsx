@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -203,6 +202,8 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         // Set loading state to true
         dispatch({ type: 'SET_LOADING', isLoading: true });
         
+        // Removed the loading toast message here
+        
         // Fetch ALL the pixels from Supabase using our helper function
         const data = await fetchAllCanvasPixels();
 
@@ -223,7 +224,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           // Update the canvas state with loaded pixels
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
         } else {
-          // If no data, show an error message and keep in loading state
+          // If no data, show an error message
           toast({
             title: "Canvas data missing",
             description: "No pixel data found on the server.",
