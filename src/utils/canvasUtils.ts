@@ -61,8 +61,8 @@ export const drawOuterBorder = (
   gridY: number,
   canvasSize: number
 ) => {
-  // Use a darker color for better visibility
-  const borderColor = '#333333';
+  // Updated border color to match header/footer (#ddd)
+  const borderColor = '#ddd';
   const borderWidth = 1;
   
   // Use exact pixel coordinates

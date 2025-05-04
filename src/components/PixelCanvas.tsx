@@ -40,4 +40,3 @@ const PixelCanvas = () => {
 };
 
 export default PixelCanvas;
-
