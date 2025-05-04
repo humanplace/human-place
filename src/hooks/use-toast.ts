@@ -7,13 +7,14 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 2000 // Changed from 1000000 to 2000 (2 seconds)
+const TOAST_REMOVE_DELAY = 2000 // 2 seconds for auto-dismiss
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  duration?: number
 }
 
 const actionTypes = {
@@ -70,6 +71,23 @@ const addToRemoveQueue = (toastId: string) => {
   }, TOAST_REMOVE_DELAY)
 
   toastTimeouts.set(toastId, timeout)
+}
+
+// Add timeout for auto-dismiss
+const addToDismissQueue = (toastId: string, duration: number = TOAST_REMOVE_DELAY) => {
+  // Clear any existing timeout for this toast
+  if (toastTimeouts.has(`dismiss-${toastId}`)) {
+    clearTimeout(toastTimeouts.get(`dismiss-${toastId}`))
+    toastTimeouts.delete(`dismiss-${toastId}`)
+  }
+
+  // Set a new timeout to dismiss after the specified duration
+  const timeout = setTimeout(() => {
+    dispatch({ type: "DISMISS_TOAST", toastId })
+    toastTimeouts.delete(`dismiss-${toastId}`)
+  }, duration)
+
+  toastTimeouts.set(`dismiss-${toastId}`, timeout)
 }
 
 export const reducer = (state: State, action: Action): State => {
@@ -140,7 +158,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ duration = TOAST_REMOVE_DELAY, ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -161,6 +179,9 @@ function toast({ ...props }: Toast) {
       },
     },
   })
+  
+  // Auto-dismiss the toast after the specified duration
+  addToDismissQueue(id, duration)
 
   return {
     id: id,
