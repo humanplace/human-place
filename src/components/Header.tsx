@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -126,7 +127,7 @@ const Header = () => {
         className="p-2"
         disabled={state.isLoading}
       >
-        <RefreshCw size={24} className={state.isLoading ? "animate-spin" : ""} />
+        <RefreshCw size={24} />
       </button>
       
       <div className="flex items-center gap-2">
