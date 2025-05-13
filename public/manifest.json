@@ -1,7 +1,7 @@
 
 {
-  "name": "Pixel Canvas Party Mode",
-  "short_name": "PixelCanvas",
+  "name": "Human Place",
+  "short_name": "Human Place",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
