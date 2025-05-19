@@ -3,13 +3,11 @@ import React, { useRef } from 'react';
 import { useCanvas } from '@/context/CanvasContext';
 import CanvasRenderer from './canvas/CanvasRenderer';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const PixelCanvas = () => {
   const { state, dispatch } = useCanvas();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
   
   // Get canvas interaction handlers
   const { 
