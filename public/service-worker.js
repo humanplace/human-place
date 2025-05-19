@@ -7,6 +7,7 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/favicon-logo.svg',
   '/icon-192x192.png',
   '/icon-512x512.png',
   '/logo.svg'
