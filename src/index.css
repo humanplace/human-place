@@ -61,7 +61,7 @@
 
 /* Force portrait orientation only for mobile devices */
 @media screen and (max-width: 767px) and (orientation: landscape) {
-  .app-container {
+  .flex.flex-col.h-screen.w-screen {
     transform: rotate(90deg);
     transform-origin: left top;
     width: 100vh;
