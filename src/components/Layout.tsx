@@ -10,12 +10,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   
   return (
     <CanvasProvider>
-      <div className="app-container flex flex-col h-screen w-screen overflow-hidden bg-white">
+      <div className="flex flex-col h-screen w-screen overflow-hidden bg-white">
         <Header />
-        <main className={`flex-1 overflow-hidden flex items-center justify-center bg-white ${!isMobile ? 'p-4' : ''}`}>
-          <div className={`${!isMobile ? 'max-w-3xl w-full h-full border border-gray-200 rounded-lg shadow-sm' : 'w-full h-full'}`}>
-            {children}
-          </div>
+        <main className="flex-1 overflow-hidden flex items-center justify-center bg-white">
+          {children}
         </main>
         <ColorPicker />
       </div>
