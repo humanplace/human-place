@@ -8,8 +8,8 @@ const urlsToCache = [
   '/index.html',
   '/manifest.json',
   '/favicon-logo.svg',
-  '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/192px.png',
+  '/512px_white.png'
 ];
 
 // Install service worker
