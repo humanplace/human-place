@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,8 +58,20 @@
   }
 }
 
-/* Force portrait orientation */
-@media screen and (orientation: landscape) {
+/* Responsive layout for different screen sizes */
+@media screen and (min-width: 768px) {
+  .app-container {
+    max-width: 1024px;
+    margin: 0 auto;
+  }
+  
+  main {
+    height: 70vh;
+  }
+}
+
+/* Force portrait orientation only for mobile devices */
+@media screen and (max-width: 767px) and (orientation: landscape) {
   .app-container {
     transform: rotate(90deg);
     transform-origin: left top;
