@@ -104,7 +104,8 @@ export async function fetchUpdatedCanvasPixels(since: string) {
         .from('canvas')
         .select('x, y, color, updated_at')
         .gt('updated_at', since) // Only get pixels updated after the given timestamp
-        .order('updated_at', { ascending: false }) // Order by newest first for optimization
+        // No explicit sorting - we just need all pixels updated since the timestamp
+        // Removing the descending sort prevents potential issues during pagination
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) {
