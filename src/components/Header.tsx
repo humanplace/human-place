@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
@@ -61,23 +60,15 @@ const Header = () => {
               });
             }
           });
-          
-          // Finished updating the canvas
-          dispatch({ type: 'SET_LOADING', isLoading: false });
-          
-          toast({
-            title: `✅ Canvas Refreshed!`,
-            description: `Updated ${data.length} pixels`,
-          });
-        } else {
-          // No updates needed
-          dispatch({ type: 'SET_LOADING', isLoading: false });
-          
-          toast({
-            title: "📋 Canvas is up to date",
-            description: "No new changes detected",
-          });
         }
+        
+        // Finished updating the canvas
+        dispatch({ type: 'SET_LOADING', isLoading: false });
+        
+        // Simple toast message regardless of number of pixels
+        toast({
+          title: "✅ Canvas Refreshed!",
+        });
       } else {
         // No lastUpdateTimestamp, fall back to fetching all pixels
         data = await fetchAllCanvasPixels();
