@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ColorCode } from './canvasTypes';
@@ -7,11 +6,16 @@ import { ColorCode } from './canvasTypes';
 export async function updatePixelInSupabase(x: number, y: number, color: ColorCode) {
   try {
     // Use upsert to implement "last write wins" logic
-    // updated_at will be automatically set to NOW() due to default value
+    // Include explicit updated_at timestamp to ensure it's updated on each change
     const { error } = await supabase
       .from('canvas')
       .upsert(
-        { x, y, color },
+        { 
+          x, 
+          y, 
+          color, 
+          updated_at: new Date().toISOString() // Explicitly set the timestamp
+        },
         { onConflict: 'x,y' } // The composite primary key columns
       );
     
