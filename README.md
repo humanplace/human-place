@@ -60,3 +60,15 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## Manual Testing
+
+To verify that slow dragging on touch devices doesn't place a pixel:
+
+1. Run the development server with `npm run dev`.
+2. Open the app in your browser and zoom to a comfortable level.
+3. Touch the canvas and slowly drag your finger around. When you release,
+   no new pixel should appear.
+4. Repeat with two fingers to confirm multi-touch gestures are ignored and
+   do not place pixels.
+

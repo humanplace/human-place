@@ -80,24 +80,24 @@ export const useCanvasInteraction = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
-    
+    if (e.touches.length !== 1) {
+      // Multi-touch gestures should never be treated as a tap
+      touchInfo.current.isTap = false;
+      return;
+    }
+
     const touch = e.touches[0];
     const tileSize = state.zoom;
-    
-    // Set isDragging to true once the user starts moving their finger
+
+    // Mark as dragging once movement occurs
     if (!touchInfo.current.isDragging) {
       touchInfo.current.isDragging = true;
-      
-      // Check if there's significant movement to consider this a drag, not a tap
-      const deltaX = Math.abs(touch.clientX - touchInfo.current.startTouchX);
-      const deltaY = Math.abs(touch.clientY - touchInfo.current.startTouchY);
-      
-      // If there is significant movement, it's not a tap
-      if (deltaX > 5 || deltaY > 5) {
-        touchInfo.current.isTap = false;
-      }
     }
+
+    // Recalculate tap status on every move relative to the starting point
+    const startDeltaX = Math.abs(touch.clientX - touchInfo.current.startTouchX);
+    const startDeltaY = Math.abs(touch.clientY - touchInfo.current.startTouchY);
+    touchInfo.current.isTap = !(startDeltaX > 5 || startDeltaY > 5);
     
     // Calculate the distance moved
     const deltaX = touch.clientX - touchInfo.current.lastTouchX;
