@@ -1,13 +1,12 @@
 
-import { useRef, useState } from 'react';
+import * as React from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
-import { ColorCode } from '@/context/canvasTypes';
 
 export const useCanvasInteraction = () => {
   const { state, dispatch } = useCanvas();
   
   // Track touch events for panning and tapping
-  const touchInfo = useRef({
+  const touchInfo = React.useRef({
     isDragging: false,
     lastTouchX: 0,
     lastTouchY: 0,
