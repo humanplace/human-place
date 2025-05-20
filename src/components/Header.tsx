@@ -1,9 +1,8 @@
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ColorCode } from '@/context/canvasTypes';
+import { fetchAllCanvasPixels } from '@/context/canvasUtils';
 
 const Header = () => {
   const { state, dispatch } = useCanvas();
@@ -32,45 +31,6 @@ const Header = () => {
     });
   };
 
-  // Helper function to fetch all canvas pixels from Supabase
-  const fetchAllCanvasPixels = async () => {
-    const pixels: { x: number, y: number, color: ColorCode }[] = [];
-    let page = 0;
-    const pageSize = 1000; // Supabase default page size
-    let hasMoreData = true;
-
-    try {
-      while (hasMoreData) {
-        // Fetch one page of pixels
-        const { data, error } = await supabase
-          .from('canvas')
-          .select('x, y, color')
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-          
-        if (error) {
-          throw error;
-        }
-
-        // Add the pixels to our result
-        if (data && data.length > 0) {
-          pixels.push(...data as { x: number, y: number, color: ColorCode }[]);
-          page++;
-          
-          // If we got fewer records than the page size, we've reached the end
-          hasMoreData = data.length === pageSize;
-        } else {
-          // No more data
-          hasMoreData = false;
-        }
-      }
-      
-      console.log(`Total pixels fetched on refresh: ${pixels.length}`);
-      return pixels;
-    } catch (error) {
-      console.error('Error fetching all canvas pixels:', error);
-      throw error;
-    }
-  };
 
   const handleRefresh = async () => {
     try {
