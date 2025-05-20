@@ -158,3 +158,14 @@ export const calculateViewport = (
   };
 };
 
+
+// Convert screen coordinates to grid coordinates
+export const screenToGrid = ({ clientX, clientY, canvasRect, position, zoom }: { clientX: number; clientY: number; canvasRect: DOMRect; position: { x: number; y: number }; zoom: number; }) => {
+  const tileSize = zoom;
+  const viewport = calculateViewport(canvasRect.width, canvasRect.height, position, tileSize);
+  const canvasX = clientX - canvasRect.left;
+  const canvasY = clientY - canvasRect.top;
+  const gridX = viewport.startX + Math.floor((canvasX + viewport.offsetX) / tileSize);
+  const gridY = viewport.startY + Math.floor((canvasY + viewport.offsetY) / tileSize);
+  return { gridX, gridY };
+};

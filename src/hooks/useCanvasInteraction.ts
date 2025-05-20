@@ -1,6 +1,7 @@
 
 import * as React from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
+import { screenToGrid } from '@/utils/canvasUtils';
 
 export const useCanvasInteraction = () => {
   const { state, dispatch } = useCanvas();
@@ -18,25 +19,17 @@ export const useCanvasInteraction = () => {
   // Handle click/tap on canvas to place a pixel
   const handleCanvasClick = (clientX: number, clientY: number, canvasRect: DOMRect) => {
     if (!state.pixels) return;
-    
-    // Calculate tile size based on zoom level
-    const tileSize = state.zoom;
-    
-    // Calculate relative position within the canvas
+
+    const { gridX, gridY } = screenToGrid({
+      clientX,
+      clientY,
+      canvasRect,
+      position: state.position,
+      zoom: state.zoom
+    });
+
     const canvasX = clientX - canvasRect.left;
     const canvasY = clientY - canvasRect.top;
-    
-    // Calculate how many tiles fit in the view
-    const tilesWide = Math.ceil(canvasRect.width / tileSize);
-    const tilesHigh = Math.ceil(canvasRect.height / tileSize);
-    
-    // Calculate the grid position based on the center position and click coordinates
-    const viewportStartX = state.position.x - (tilesWide / 2);
-    const viewportStartY = state.position.y - (tilesHigh / 2);
-    
-    // Convert from screen space to grid space - use Math.floor for consistent grid alignment
-    const gridX = Math.floor(viewportStartX + (canvasX / tileSize));
-    const gridY = Math.floor(viewportStartY + (canvasY / tileSize));
     
     if (import.meta.env.DEV) {
       console.log('Click registered at:', gridX, gridY);
@@ -117,12 +110,11 @@ export const useCanvasInteraction = () => {
   };
 
   const handleTouchEnd = (e: React.TouchEvent, canvasRect: DOMRect) => {
-    // If it was a tap (minimal movement), place a pixel
+    // If it was a tap (minimal movement), place a pixel using the last touch position
     if (touchInfo.current.isTap) {
-      // Use the starting touch position for accurate placement
       handleCanvasClick(
-        touchInfo.current.startTouchX, 
-        touchInfo.current.startTouchY, 
+        touchInfo.current.lastTouchX,
+        touchInfo.current.lastTouchY,
         canvasRect
       );
     }
