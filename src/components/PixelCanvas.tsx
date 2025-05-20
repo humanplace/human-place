@@ -1,11 +1,9 @@
 
 import React, { useRef } from 'react';
-import { useCanvas } from '@/context/CanvasContext';
 import CanvasRenderer from './canvas/CanvasRenderer';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 
 const PixelCanvas = () => {
-  const { state, dispatch } = useCanvas();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   

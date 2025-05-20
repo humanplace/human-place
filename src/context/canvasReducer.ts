@@ -15,13 +15,14 @@ export const initialState: CanvasState = {
 // Reducer function to handle all canvas-related actions
 export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasState {
   switch (action.type) {
-    case 'SET_PIXEL':
+    case 'SET_PIXEL': {
       // Ensure pixels array exists before updating
       if (!state.pixels) return state;
-      
+
       const newPixels = [...state.pixels];
       newPixels[action.y][action.x] = action.color;
       return { ...state, pixels: newPixels };
+    }
       
     case 'SET_PENDING_PIXEL':
       return { 
@@ -33,21 +34,22 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
         }
       };
       
-    case 'COMMIT_PENDING_PIXEL':
+    case 'COMMIT_PENDING_PIXEL': {
       if (!state.pendingPixel || !state.pixels) return state;
-      
+
       const updatedPixels = [...state.pixels];
       const { x, y, color } = state.pendingPixel;
       updatedPixels[y][x] = color;
-      
+
       // Save to Supabase (async, won't block UI)
       updatePixelInSupabase(x, y, color);
-      
+
       return {
         ...state,
         pixels: updatedPixels,
         pendingPixel: null
       };
+    }
       
     case 'CLEAR_PENDING_PIXEL':
       return { ...state, pendingPixel: null };
