@@ -40,8 +40,10 @@ const Header = () => {
       // Fetch all the pixels from Supabase using our pagination helper
       const data = await fetchAllCanvasPixels();
       
-      // Log how many pixels we received
-      console.log(`Refresh: fetched ${data.length} pixels`);
+      // Log how many pixels we received during development
+      if (import.meta.env.DEV) {
+        console.log(`Refresh: fetched ${data.length} pixels`);
+      }
       
       if (data && data.length > 0) {
         // Create a sparse canvas without filling with any default color

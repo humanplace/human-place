@@ -64,13 +64,6 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
       tileSize
     );
     
-    console.log('Viewport:', viewport);
-    console.log('Position:', state.position);
-    console.log('Container dimensions:', containerWidth, containerHeight);
-    console.log('Zoom:', tileSize);
-    
-    // Count how many pixels we're rendering to check if we're using the full dataset
-    let pixelCount = 0;
     
     // Draw the pixels - Expand the rendering loop slightly to ensure we cover the whole visible area
     for (let y = 0; y <= viewport.tilesHigh + 1; y++) {
@@ -92,7 +85,6 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         if (state.pixels[gridY] && state.pixels[gridY][gridX] !== undefined) {
           const pixelColor = state.pixels[gridY][gridX] as ColorCode;
           drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
-          pixelCount++;
         }
         
         // Draw grid lines for each tile when zoom level is 16 or higher
@@ -105,18 +97,7 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
       }
     }
     
-    console.log(`Rendered ${pixelCount} pixels in the current viewport`);
-    
-    // Count total pixels in the dataset
-    let totalPixelCount = 0;
-    for (let y = 0; y < CANVAS_SIZE; y++) {
-      for (let x = 0; x < CANVAS_SIZE; x++) {
-        if (state.pixels[y] && state.pixels[y][x] !== undefined) {
-          totalPixelCount++;
-        }
-      }
-    }
-    console.log(`Total pixels in dataset: ${totalPixelCount}`);
+
     
     // Draw pending pixel if it exists
     if (state.pendingPixel) {

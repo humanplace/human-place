@@ -31,7 +31,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         // Fetch ALL the pixels from Supabase using our helper function
         const data = await fetchAllCanvasPixels();
 
-        console.log(`Successfully fetched ${data.length} pixels`);
+        if (import.meta.env.DEV) {
+          console.log(`Successfully fetched ${data.length} pixels`);
+        }
         
         // If data exists, convert the flat array of pixels to our sparse format
         if (data && data.length > 0) {
