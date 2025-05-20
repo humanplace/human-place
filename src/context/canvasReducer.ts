@@ -19,8 +19,10 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
       // Ensure pixels array exists before updating
       if (!state.pixels) return state;
 
+      const newRow = [...state.pixels[action.y]];
+      newRow[action.x] = action.color;
       const newPixels = [...state.pixels];
-      newPixels[action.y][action.x] = action.color;
+      newPixels[action.y] = newRow;
       return { ...state, pixels: newPixels };
     }
       
