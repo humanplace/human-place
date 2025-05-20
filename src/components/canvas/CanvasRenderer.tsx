@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { 
   calculateViewport, 
@@ -7,7 +7,6 @@ import {
   drawGridLine,
   drawOuterBorder
 } from '@/utils/canvasUtils';
-import { Skeleton } from '@/components/ui/skeleton';
 import { LoaderCircle } from 'lucide-react';
 import { ColorCode } from '@/context/canvasTypes';
 
