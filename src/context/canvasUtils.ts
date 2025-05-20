@@ -59,7 +59,9 @@ export async function fetchAllCanvasPixels() {
       }
     }
 
-    console.log(`Total pixels fetched: ${pixels.length}`);
+    if (import.meta.env.DEV) {
+      console.log(`Total pixels fetched: ${pixels.length}`);
+    }
     return pixels;
   } catch (error) {
     console.error('Error fetching all canvas pixels:', error);
