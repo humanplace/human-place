@@ -11,15 +11,15 @@ export let lastUpdateTimestamp: string | null = null;
 export async function updatePixelInSupabase(x: number, y: number, color: ColorCode) {
   try {
     // Use upsert to implement "last write wins" logic
-    // Include explicit updated_at timestamp to ensure it's updated on each change
+    // Let Supabase set the updated_at timestamp automatically using the database default
     const { error } = await supabase
       .from('canvas')
       .upsert(
         { 
           x, 
           y, 
-          color, 
-          updated_at: new Date().toISOString() // Explicitly set the timestamp
+          color
+          // No longer manually setting updated_at - letting Supabase handle it
         },
         { onConflict: 'x,y' } // The composite primary key columns
       );
