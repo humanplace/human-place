@@ -1,3 +1,4 @@
+
 import { CanvasState, CanvasAction } from './canvasTypes';
 import { updatePixelInSupabase } from './canvasUtils';
 import { CANVAS_SIZE } from './canvasTypes';
@@ -39,9 +40,15 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
     case 'COMMIT_PENDING_PIXEL': {
       if (!state.pendingPixel || !state.pixels) return state;
 
-      const updatedPixels = [...state.pixels];
       const { x, y, color } = state.pendingPixel;
-      updatedPixels[y][x] = color;
+      
+      // Create a new copy of the row to modify
+      const newRow = [...state.pixels[y]];
+      newRow[x] = color;
+      
+      // Create a new copy of the pixels array and update with the new row
+      const updatedPixels = [...state.pixels];
+      updatedPixels[y] = newRow;
 
       // Save to Supabase (async, won't block UI)
       updatePixelInSupabase(x, y, color);
