@@ -7,6 +7,7 @@ import { ColorCode } from './canvasTypes';
 export async function updatePixelInSupabase(x: number, y: number, color: ColorCode) {
   try {
     // Use upsert to implement "last write wins" logic
+    // updated_at will be automatically set to NOW() due to default value
     const { error } = await supabase
       .from('canvas')
       .upsert(
@@ -30,7 +31,7 @@ export async function updatePixelInSupabase(x: number, y: number, color: ColorCo
 
 // Helper function to fetch all canvas pixels from Supabase
 export async function fetchAllCanvasPixels() {
-  const pixels: { x: number, y: number, color: ColorCode }[] = [];
+  const pixels: { x: number, y: number, color: ColorCode, updated_at: string }[] = [];
   let page = 0;
   const pageSize = 1000; // Supabase default page size
   let hasMoreData = true;
@@ -40,7 +41,7 @@ export async function fetchAllCanvasPixels() {
     while (hasMoreData) {
       const { data, error } = await supabase
         .from('canvas')
-        .select('x, y, color')
+        .select('x, y, color, updated_at')
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) {
@@ -48,7 +49,7 @@ export async function fetchAllCanvasPixels() {
       }
 
       if (data && data.length > 0) {
-        pixels.push(...data as { x: number, y: number, color: ColorCode }[]);
+        pixels.push(...data as { x: number, y: number, color: ColorCode, updated_at: string }[]);
         page++;
         
         // If we got fewer records than the page size, we've reached the end
@@ -65,6 +66,48 @@ export async function fetchAllCanvasPixels() {
     return pixels;
   } catch (error) {
     console.error('Error fetching all canvas pixels:', error);
+    throw error;
+  }
+}
+
+// New function to fetch only pixels updated since a specific timestamp
+export async function fetchUpdatedCanvasPixels(since: string) {
+  const pixels: { x: number, y: number, color: ColorCode, updated_at: string }[] = [];
+  let page = 0;
+  const pageSize = 1000; // Supabase default page size
+  let hasMoreData = true;
+
+  try {
+    // Loop until we've fetched all updated pixels
+    while (hasMoreData) {
+      const { data, error } = await supabase
+        .from('canvas')
+        .select('x, y, color, updated_at')
+        .gt('updated_at', since) // Only get pixels updated after the given timestamp
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        pixels.push(...data as { x: number, y: number, color: ColorCode, updated_at: string }[]);
+        page++;
+        
+        // If we got fewer records than the page size, we've reached the end
+        hasMoreData = data.length === pageSize;
+      } else {
+        // No more data
+        hasMoreData = false;
+      }
+    }
+
+    if (import.meta.env.DEV) {
+      console.log(`Updated pixels fetched since ${since}: ${pixels.length}`);
+    }
+    return pixels;
+  } catch (error) {
+    console.error('Error fetching updated canvas pixels:', error);
     throw error;
   }
 }

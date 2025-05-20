@@ -12,16 +12,19 @@ export type Database = {
       canvas: {
         Row: {
           color: number
+          updated_at: string | null
           x: number
           y: number
         }
         Insert: {
           color: number
+          updated_at?: string | null
           x: number
           y: number
         }
         Update: {
           color?: number
+          updated_at?: string | null
           x?: number
           y?: number
         }
