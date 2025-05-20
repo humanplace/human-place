@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
-import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels } from './canvasUtils';
+import { fetchAllCanvasPixels, lastUpdateTimestamp } from './canvasUtils';
 import { CanvasState, CanvasAction, CANVAS_SIZE } from './canvasTypes';
 
 // Export necessary types and constants from the types file
@@ -16,9 +16,6 @@ interface CanvasContextType {
 }
 
 const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
-
-// Store last update timestamp to support differential updates
-let lastUpdateTimestamp: string | null = null;
 
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
@@ -50,18 +47,6 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
             }
           });
 
-          // Store the latest update timestamp for differential updates
-          // Find the most recent timestamp among all pixels
-          if (data.length > 0) {
-            const timestamps = data.map(pixel => new Date(pixel.updated_at).getTime());
-            const latestTimestamp = new Date(Math.max(...timestamps)).toISOString();
-            lastUpdateTimestamp = latestTimestamp;
-            
-            if (import.meta.env.DEV) {
-              console.log(`Setting last update timestamp to ${lastUpdateTimestamp}`);
-            }
-          }
-
           // Update the canvas state with loaded pixels
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
         } else {
@@ -87,47 +72,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     };
     
     loadCanvasData();
-
-    // Set up a refresh interval to fetch only updated pixels
-    const refreshIntervalId = setInterval(async () => {
-      // Skip if initial load hasn't completed yet
-      if (!lastUpdateTimestamp || state.isLoading || !state.pixels) {
-        return;
-      }
-
-      try {
-        // Fetch only pixels updated since last refresh
-        const updatedData = await fetchUpdatedCanvasPixels(lastUpdateTimestamp);
-        
-        if (updatedData.length > 0) {
-          if (import.meta.env.DEV) {
-            console.log(`Refreshing ${updatedData.length} updated pixels`);
-          }
-          
-          // Apply updates to the canvas
-          updatedData.forEach(pixel => {
-            if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
-              dispatch({ 
-                type: 'SET_PIXEL',
-                x: pixel.x,
-                y: pixel.y,
-                color: pixel.color
-              });
-            }
-          });
-          
-          // Update the timestamp to the latest update
-          const timestamps = updatedData.map(pixel => new Date(pixel.updated_at).getTime());
-          const latestTimestamp = new Date(Math.max(...timestamps)).toISOString();
-          lastUpdateTimestamp = latestTimestamp;
-        }
-      } catch (error) {
-        console.error('Failed to refresh canvas data:', error);
-      }
-    }, 10000); // Refresh every 10 seconds
-
-    // Clean up interval on unmount
-    return () => clearInterval(refreshIntervalId);
+    
+    // No automatic refresh interval anymore
+    
   }, []);
   
   return (

@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { fetchAllCanvasPixels } from '@/context/canvasUtils';
+import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
 
 const Header = () => {
   const { state, dispatch } = useCanvas();
@@ -31,46 +32,86 @@ const Header = () => {
     });
   };
 
-
   const handleRefresh = async () => {
     try {
       // Set loading state
       dispatch({ type: 'SET_LOADING', isLoading: true });
       
-      // Fetch all the pixels from Supabase using our pagination helper
-      const data = await fetchAllCanvasPixels();
+      let data;
       
-      // Log how many pixels we received during development
-      if (import.meta.env.DEV) {
-        console.log(`Refresh: fetched ${data.length} pixels`);
-      }
-      
-      if (data && data.length > 0) {
-        // Create a sparse canvas without filling with any default color
-        const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
+      // Check if we have a lastUpdateTimestamp to do a differential update
+      if (lastUpdateTimestamp) {
+        // Fetch only updated pixels since lastUpdateTimestamp
+        data = await fetchUpdatedCanvasPixels(lastUpdateTimestamp);
         
-        // Apply all the pixels from Supabase
-        data.forEach(pixel => {
-          if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
-            loadedPixels[pixel.y][pixel.x] = pixel.color;
-          }
-        });
-
-        // Update the canvas state with loaded pixels
-        dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-
-        // Updated toast message with capitalized 'Refreshed'
-        toast({
-          title: "✅ Canvas Refreshed!",
-        });
+        if (import.meta.env.DEV) {
+          console.log(`Refresh: fetched ${data.length} updated pixels since ${lastUpdateTimestamp}`);
+        }
+        
+        // If we have updated pixels, apply them to the canvas
+        if (data && data.length > 0) {
+          // Apply updates to the canvas
+          data.forEach(pixel => {
+            if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
+              dispatch({ 
+                type: 'SET_PIXEL',
+                x: pixel.x,
+                y: pixel.y,
+                color: pixel.color
+              });
+            }
+          });
+          
+          // Finished updating the canvas
+          dispatch({ type: 'SET_LOADING', isLoading: false });
+          
+          toast({
+            title: `✅ Canvas Refreshed!`,
+            description: `Updated ${data.length} pixels`,
+          });
+        } else {
+          // No updates needed
+          dispatch({ type: 'SET_LOADING', isLoading: false });
+          
+          toast({
+            title: "📋 Canvas is up to date",
+            description: "No new changes detected",
+          });
+        }
       } else {
-        // If no data, show an error message
-        dispatch({ type: 'SET_LOADING', isLoading: false });
-        toast({
-          title: "Canvas data missing",
-          description: "No pixel data found on the server.",
-          variant: "destructive",
-        });
+        // No lastUpdateTimestamp, fall back to fetching all pixels
+        data = await fetchAllCanvasPixels();
+        
+        if (import.meta.env.DEV) {
+          console.log(`Initial Refresh: fetched ${data.length} pixels`);
+        }
+        
+        if (data && data.length > 0) {
+          // Create a sparse canvas without filling with any default color
+          const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
+          
+          // Apply all the pixels from Supabase
+          data.forEach(pixel => {
+            if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
+              loadedPixels[pixel.y][pixel.x] = pixel.color;
+            }
+          });
+
+          // Update the canvas state with loaded pixels
+          dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+
+          toast({
+            title: "✅ Canvas Refreshed!",
+          });
+        } else {
+          // If no data, show an error message
+          dispatch({ type: 'SET_LOADING', isLoading: false });
+          toast({
+            title: "Canvas data missing",
+            description: "No pixel data found on the server.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to reload canvas:', error);
