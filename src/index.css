@@ -65,8 +65,8 @@
   }
 }
 
-/* Force portrait orientation */
-@media screen and (orientation: landscape) {
+/* Force portrait orientation on small devices */
+@media screen and (orientation: landscape) and (max-width: 767px) {
   .app-container {
     transform: rotate(90deg);
     transform-origin: left top;
