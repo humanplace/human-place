@@ -77,3 +77,32 @@
     left: 0;
   }
 }
+
+/* Pixel button styles */
+@layer components {
+  .pixel-shadow {
+    box-shadow: 
+      5px 0 0 0 #000, 
+      -5px 0 0 0 #000,
+      0 5px 0 0 #000,
+      0 -5px 0 0 #000,
+      3px 3px 0 0 #000,
+      -3px -3px 0 0 #000,
+      3px -3px 0 0 #000,
+      -3px 3px 0 0 #000;
+    transition: transform 0.1s ease-in-out;
+  }
+  
+  .pixel-shadow:active {
+    transform: translateY(3px);
+    box-shadow: 
+      5px 0 0 0 #000, 
+      -5px 0 0 0 #000,
+      0 3px 0 0 #000,
+      0 -5px 0 0 #000,
+      3px 2px 0 0 #000,
+      -3px -3px 0 0 #000,
+      3px -3px 0 0 #000,
+      -3px 2px 0 0 #000;
+  }
+}

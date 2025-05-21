@@ -22,12 +22,17 @@ const LandingPage = () => {
       
       {/* Create Together Button Container with padding */}
       <div className="px-6 pb-12">
-        <Button 
+        <button 
           onClick={handleCreateClick}
-          className="w-full bg-black hover:bg-gray-800 text-white py-6 h-auto rounded-xl text-xl font-medium transition-all shadow-md hover:shadow-lg"
+          className="w-full bg-black text-white py-6 text-xl font-medium transition-all 
+            relative border-0 rounded-none h-auto
+            before:absolute before:inset-0 before:border-4 before:border-black before:bg-transparent 
+            after:absolute after:inset-[-5px] after:border-4 after:border-black after:bg-transparent
+            hover:before:bg-[#ffa800] hover:before:bg-opacity-20 hover:after:border-[#ffa800]
+            pixel-shadow"
         >
-          Create Together
-        </Button>
+          <span className="relative z-10">Create Together</span>
+        </button>
       </div>
     </div>
   );
