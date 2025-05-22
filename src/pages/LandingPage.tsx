@@ -2,12 +2,71 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
+import { MiniKit, VerifyCommandInput, VerificationLevel, ISuccessResult } from '@worldcoin/minikit-js';
+import { toast } from '@/hooks/use-toast';
+import { verifyWorldIdProof } from '@/api/verify';
+import { useCanvas } from '@/context/CanvasContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { dispatch } = useCanvas();
   
-  const handleCreateClick = () => {
-    navigate('/canvas');
+  const handleCreateClick = async () => {
+    // Check if MiniKit is available (user is in World App)
+    if (!MiniKit.isInstalled()) {
+      toast({
+        title: "World App Required",
+        description: "Please open this app in World App",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('MiniKit is installed, proceeding with verification...');
+
+    // Prepare verification payload
+    const verifyPayload: VerifyCommandInput = {
+      action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
+      verification_level: VerificationLevel.Orb, // Only orb-verified users
+    };
+
+    console.log('Verification payload:', verifyPayload);
+
+    try {
+      // Trigger World ID verification
+      const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
+      
+      if (finalPayload.status === 'error') {
+        toast({
+          title: "Must be Orb verified",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verify the proof on our backend
+      const verificationResult = await verifyWorldIdProof({
+        payload: finalPayload as ISuccessResult,
+        action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
+      });
+
+      if (verificationResult.success && verificationResult.verified) {
+        // Success - user is orb verified, set verification state and proceed to canvas
+        dispatch({ type: 'SET_USER_VERIFIED', verified: true });
+        navigate('/canvas');
+      } else {
+        toast({
+          title: "Must be Orb verified",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('World ID verification error:', error);
+      toast({
+        title: "Must be Orb verified",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
