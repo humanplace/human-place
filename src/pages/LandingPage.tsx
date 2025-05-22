@@ -46,18 +46,29 @@ const LandingPage = () => {
       }
 
       // Verify the proof on our backend
+      console.log('About to verify proof with backend...');
+      console.log('Environment variables:', {
+        VITE_WORLD_APP_ID: import.meta.env.VITE_WORLD_APP_ID,
+        VITE_WORLD_ACTION_ID: import.meta.env.VITE_WORLD_ACTION_ID
+      });
+      
       const verificationResult = await verifyWorldIdProof({
         payload: finalPayload as ISuccessResult,
         action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
       });
 
+      console.log('Backend verification result:', verificationResult);
+
       if (verificationResult.success && verificationResult.verified) {
         // Success - user is orb verified, set verification state and proceed to canvas
+        console.log('✅ Verification successful! Proceeding to canvas...');
         dispatch({ type: 'SET_USER_VERIFIED', verified: true });
         navigate('/canvas');
       } else {
+        console.error('❌ Backend verification failed:', verificationResult);
         toast({
           title: "Must be Orb verified",
+          description: `Verification failed: ${verificationResult.message || 'Unknown error'}`,
           variant: "destructive",
         });
       }
