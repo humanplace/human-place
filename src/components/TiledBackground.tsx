@@ -30,7 +30,8 @@ const TiledBackground: React.FC<TiledBackgroundProps> = ({
   const tiles = useMemo(() => {
     const tiles = [];
     // Generate a random seed for each page load/component mount
-    const seedValue = Math.floor(Math.random() * 10000000);
+    // Seed ranges from 1..2147483646 so we never start at zero
+    const seedValue = Math.floor(Math.random() * 2147483646) + 1;
     let seed = seedValue;
 
     const random = () => {
