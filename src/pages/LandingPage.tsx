@@ -2,107 +2,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
-import { MiniKit, VerifyCommandInput, VerificationLevel, ISuccessResult } from '@worldcoin/minikit-js';
-import { toast } from '@/hooks/use-toast';
-
-import { useCanvas } from '@/context/CanvasContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { dispatch } = useCanvas();
   
-  const handleCreateClick = async () => {
-    console.log('Starting World ID verification flow...');
-    
-    // Ensure MiniKit is installed
-    MiniKit.install();
-    
-    // In World App mini apps, we can proceed directly to verification
-    // The isInstalled() check can be unreliable in some cases
-
-    // Prepare verification payload
-    const verifyPayload: VerifyCommandInput = {
-      action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
-      verification_level: VerificationLevel.Orb, // Only orb-verified users
-    };
-
-    console.log('Verification payload:', verifyPayload);
-
-    try {
-      // Trigger World ID verification
-      console.log('Calling MiniKit.commandsAsync.verify...');
-      const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
-      
-      console.log('Verification response:', finalPayload);
-      
-      if (finalPayload.status === 'error') {
-        console.error('Verification failed:', finalPayload);
-        toast({
-          title: "Must be Orb verified",
-          description: "Verification failed",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Verify the proof on our backend API
-      console.log('About to verify proof with backend API...');
-      console.log('Environment variables:', {
-        VITE_WORLD_APP_ID: import.meta.env.VITE_WORLD_APP_ID,
-        VITE_WORLD_ACTION_ID: import.meta.env.VITE_WORLD_ACTION_ID
-      });
-      
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dzvsnevhawxdzxuqtdse.supabase.co'
-      const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/verify-world-id`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          payload: finalPayload as ISuccessResult,
-          action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
-        }),
-      });
-
-      const verificationResult = await verifyResponse.json();
-      console.log('Backend verification result:', verificationResult);
-
-      if (verificationResult.success && verificationResult.verified) {
-        // Success - user is orb verified, set verification state and proceed to canvas
-        console.log('✅ Verification successful! Proceeding to canvas...');
-        dispatch({ type: 'SET_USER_VERIFIED', verified: true });
-        navigate('/canvas');
-      } else {
-        console.error('❌ Backend verification failed:', verificationResult);
-        toast({
-          title: "Must be Orb verified",
-          description: `Verification failed: ${verificationResult.message || 'Unknown error'}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('World ID verification error:', error);
-      
-      // Check if the error is because MiniKit isn't available
-      if (error && typeof error === 'object' && 'message' in error) {
-        const errorMessage = (error as Error).message;
-        if (errorMessage.includes('MiniKit') || errorMessage.includes('not installed')) {
-          toast({
-            title: "World App Required",
-            description: "Please open this app in World App",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-      
-      toast({
-        title: "Must be Orb verified",
-        description: "Verification failed",
-        variant: "destructive",
-      });
-    }
+  const handleCreateClick = () => {
+    navigate('/canvas');
   };
 
   return (

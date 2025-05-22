@@ -34,7 +34,6 @@ export interface CanvasState {
   position: { x: number; y: number };
   zoom: number;
   selectedColor: ColorCode;
-  isUserVerified: boolean;  // Track if user has completed World ID verification
 }
 
 // Actions for our reducer
@@ -47,5 +46,4 @@ export type CanvasAction =
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: ColorCode }
   | { type: 'INITIALIZE_CANVAS'; pixels: (ColorCode | undefined)[][] }
-  | { type: 'SET_LOADING'; isLoading: boolean }
-  | { type: 'SET_USER_VERIFIED'; verified: boolean };
+  | { type: 'SET_LOADING'; isLoading: boolean };

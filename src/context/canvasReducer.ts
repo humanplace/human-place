@@ -10,8 +10,7 @@ export const initialState: CanvasState = {
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
   zoom: 1,
-  selectedColor: 0, // Default to black (0)
-  isUserVerified: false // User starts unverified
+  selectedColor: 0 // Default to black (0)
 };
 
 // Reducer function to handle all canvas-related actions
@@ -88,9 +87,6 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.isLoading };
-      
-    case 'SET_USER_VERIFIED':
-      return { ...state, isUserVerified: action.verified };
       
     default:
       return state;
