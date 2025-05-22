@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import PixelBorderButton from '@/components/PixelBorderButton';
+import { Button } from "@/components/ui/button";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -22,12 +22,12 @@ const LandingPage = () => {
       
       {/* Create Together Button Container with padding */}
       <div className="px-6 pb-12">
-        <PixelBorderButton 
+        <Button 
           onClick={handleCreateClick}
-          className="hover:bg-gray-900 active:bg-black transition-colors"
+          className="w-full bg-black hover:bg-gray-800 text-white py-6 h-auto rounded-xl text-xl font-medium transition-all shadow-md hover:shadow-lg"
         >
           Create Together
-        </PixelBorderButton>
+        </Button>
       </div>
     </div>
   );
