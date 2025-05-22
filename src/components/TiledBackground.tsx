@@ -21,6 +21,11 @@ const TiledBackground: React.FC<TiledBackgroundProps> = ({
     };
   }, []);
 
+  // Filter out black (0), brown (6), and grey (10) from our color palette
+  const filteredColors = useMemo(() => {
+    return COLORS.filter(color => color !== 0 && color !== 6 && color !== 10);
+  }, []);
+
   // Generate the colored tiles with a deterministic pattern
   const tiles = useMemo(() => {
     const tiles = [];
@@ -40,9 +45,9 @@ const TiledBackground: React.FC<TiledBackgroundProps> = ({
       const shouldBeColored = random() * 100 < density;
       
       if (shouldBeColored) {
-        // Pick a random color from our palette
-        const colorIndex = Math.floor(random() * COLORS.length);
-        const color = COLORS[colorIndex];
+        // Pick a random color from our filtered palette
+        const colorIndex = Math.floor(random() * filteredColors.length);
+        const color = filteredColors[colorIndex];
         tiles.push({ id: i, color });
       } else {
         // Push an empty/white tile (using 1 as white from our palette)
@@ -51,7 +56,7 @@ const TiledBackground: React.FC<TiledBackgroundProps> = ({
     }
 
     return tiles;
-  }, [gridSize, density]);
+  }, [gridSize, density, filteredColors]);
 
   return (
     <div 
