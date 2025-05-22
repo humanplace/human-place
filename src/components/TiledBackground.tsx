@@ -26,11 +26,11 @@ const TiledBackground: React.FC<TiledBackgroundProps> = ({
     return COLORS.filter(color => color !== 0 && color !== 6 && color !== 10);
   }, []);
 
-  // Generate the colored tiles with a deterministic pattern
+  // Generate the colored tiles with a random seed pattern
   const tiles = useMemo(() => {
     const tiles = [];
-    // Use a seeded "random" approach to get consistent results on re-renders
-    const seedValue = 123;
+    // Generate a random seed for each page load/component mount
+    const seedValue = Math.floor(Math.random() * 10000000);
     let seed = seedValue;
 
     const random = () => {
