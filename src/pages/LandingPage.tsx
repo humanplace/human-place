@@ -52,10 +52,12 @@ const LandingPage = () => {
         VITE_WORLD_ACTION_ID: import.meta.env.VITE_WORLD_ACTION_ID
       });
       
-      const verifyResponse = await fetch('/api/verify', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dzvsnevhawxdzxuqtdse.supabase.co'
+      const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/verify-world-id`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           payload: finalPayload as ISuccessResult,
