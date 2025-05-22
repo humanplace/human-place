@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
 import { MiniKit, VerifyCommandInput, VerificationLevel, ISuccessResult } from '@worldcoin/minikit-js';
 import { toast } from '@/hooks/use-toast';
-import { verifyWorldIdProof } from '@/api/verify';
+
 import { useCanvas } from '@/context/CanvasContext';
 
 const LandingPage = () => {
@@ -45,18 +45,25 @@ const LandingPage = () => {
         return;
       }
 
-      // Verify the proof on our backend
-      console.log('About to verify proof with backend...');
+      // Verify the proof on our backend API
+      console.log('About to verify proof with backend API...');
       console.log('Environment variables:', {
         VITE_WORLD_APP_ID: import.meta.env.VITE_WORLD_APP_ID,
         VITE_WORLD_ACTION_ID: import.meta.env.VITE_WORLD_ACTION_ID
       });
       
-      const verificationResult = await verifyWorldIdProof({
-        payload: finalPayload as ISuccessResult,
-        action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
+      const verifyResponse = await fetch('/api/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payload: finalPayload as ISuccessResult,
+          action: import.meta.env.VITE_WORLD_ACTION_ID || 'human-verification',
+        }),
       });
 
+      const verificationResult = await verifyResponse.json();
       console.log('Backend verification result:', verificationResult);
 
       if (verificationResult.success && verificationResult.verified) {
