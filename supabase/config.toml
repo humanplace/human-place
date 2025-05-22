@@ -1,1 +1,5 @@
+
 project_id = "dzvsnevhawxdzxuqtdse"
+
+[functions.verify-world-id]
+verify_jwt = true
