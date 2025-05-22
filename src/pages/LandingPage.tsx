@@ -12,17 +12,13 @@ const LandingPage = () => {
   const { dispatch } = useCanvas();
   
   const handleCreateClick = async () => {
-    // Check if MiniKit is available (user is in World App)
-    if (!MiniKit.isInstalled()) {
-      toast({
-        title: "World App Required",
-        description: "Please open this app in World App",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log('MiniKit is installed, proceeding with verification...');
+    console.log('Starting World ID verification flow...');
+    
+    // Ensure MiniKit is installed
+    MiniKit.install();
+    
+    // In World App mini apps, we can proceed directly to verification
+    // The isInstalled() check can be unreliable in some cases
 
     // Prepare verification payload
     const verifyPayload: VerifyCommandInput = {
@@ -34,11 +30,16 @@ const LandingPage = () => {
 
     try {
       // Trigger World ID verification
+      console.log('Calling MiniKit.commandsAsync.verify...');
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
       
+      console.log('Verification response:', finalPayload);
+      
       if (finalPayload.status === 'error') {
+        console.error('Verification failed:', finalPayload);
         toast({
           title: "Must be Orb verified",
+          description: "Verification failed",
           variant: "destructive",
         });
         return;
@@ -62,8 +63,23 @@ const LandingPage = () => {
       }
     } catch (error) {
       console.error('World ID verification error:', error);
+      
+      // Check if the error is because MiniKit isn't available
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage.includes('MiniKit') || errorMessage.includes('not installed')) {
+          toast({
+            title: "World App Required",
+            description: "Please open this app in World App",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
       toast({
         title: "Must be Orb verified",
+        description: "Verification failed",
         variant: "destructive",
       });
     }
