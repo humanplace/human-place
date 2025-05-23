@@ -113,7 +113,7 @@ const LandingPage = () => {
           <Button 
             onClick={handleCreateClick}
             disabled={isVerifying}
-            className="w-full bg-black active:bg-black focus:bg-black focus-visible:bg-black text-white py-6 h-auto rounded-xl text-xl font-medium shadow-md disabled:opacity-50"
+            className="w-full !bg-black active:!bg-black focus:!bg-black focus-visible:!bg-black hover:!bg-black text-white py-6 h-auto rounded-xl text-xl font-medium shadow-md disabled:opacity-50"
           >
             {isVerifying ? (
               <>
