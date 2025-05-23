@@ -8,13 +8,25 @@ import { toast } from '@/hooks/use-toast';
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [debugStatus, setDebugStatus] = useState<string>('Ready');
   
+  const showDebugToast = (message: string, variant: 'default' | 'destructive' = 'default') => {
+    toast({
+      title: "🔍 Debug",
+      description: message,
+      variant,
+      duration: 3000,
+    });
+  };
+
   const handleCreateClick = async () => {
-    console.log('🚀 [DEBUG] handleCreateClick started');
+    setDebugStatus('Starting verification...');
+    showDebugToast('Starting handleCreateClick');
     
     // Check if MiniKit is available (running in World App)
     if (!MiniKit.isInstalled()) {
-      console.log('❌ [DEBUG] MiniKit not installed');
+      setDebugStatus('MiniKit not installed');
+      showDebugToast('MiniKit not installed', 'destructive');
       toast({
         title: "World App Required",
         description: "This app must be opened within the World App to verify your identity.",
@@ -23,7 +35,8 @@ const LandingPage = () => {
       return;
     }
 
-    console.log('✅ [DEBUG] MiniKit installed, setting isVerifying to true');
+    setDebugStatus('Setting isVerifying = true');
+    showDebugToast('MiniKit installed, setting isVerifying = true');
     setIsVerifying(true);
 
     try {
@@ -33,31 +46,30 @@ const LandingPage = () => {
         verification_level: VerificationLevel.Orb,
       };
 
-      console.log('📋 [DEBUG] Verification payload configured:', verifyPayload);
-      console.log('🔄 [DEBUG] Calling MiniKit.commandsAsync.verify() - promise starting...');
+      setDebugStatus('Calling MiniKit.verify() - WAITING...');
+      showDebugToast('Calling MiniKit.commandsAsync.verify() - promise starting');
       
       // This is where Cancel/X might hang
       const result = await MiniKit.commandsAsync.verify(verifyPayload);
       
-      console.log('✅ [DEBUG] MiniKit.commandsAsync.verify() resolved!');
-      console.log('📦 [DEBUG] Full result object:', result);
-      console.log('📦 [DEBUG] finalPayload:', result.finalPayload);
-      console.log('📦 [DEBUG] finalPayload.status:', result.finalPayload?.status);
+      setDebugStatus('MiniKit.verify() RESOLVED!');
+      showDebugToast('✅ MiniKit promise resolved!');
+      showDebugToast(`Status: ${result.finalPayload?.status}`);
       
       const { finalPayload } = result;
       
       // Handle all non-success responses (error, cancelled, rejected, etc.)
       if (finalPayload.status !== 'success') {
-        console.log('🚫 [DEBUG] Non-success status detected:', finalPayload.status);
-        console.log('🚫 [DEBUG] Full finalPayload:', finalPayload);
-        console.log('🔄 [DEBUG] Returning early (no backend call)');
+        setDebugStatus(`Non-success status: ${finalPayload.status}`);
+        showDebugToast(`Non-success status: ${finalPayload.status}`);
+        showDebugToast('Returning early (no backend call)');
         // User cancelled, closed popup, or verification failed at World ID level
         // Reset button silently - no toast needed for user-initiated cancellations
         return;
       }
 
-      console.log('✅ [DEBUG] Success status detected, proceeding to backend verification');
-      console.log('🌐 [DEBUG] Sending request to Edge Function...');
+      setDebugStatus('Success! Calling backend...');
+      showDebugToast('Success status - proceeding to backend verification');
 
       // Send proof to our Edge Function for verification
       const response = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-world-id', {
@@ -73,17 +85,19 @@ const LandingPage = () => {
         }),
       });
 
-      console.log('📡 [DEBUG] Backend response received, status:', response.status);
+      setDebugStatus('Backend response received');
+      showDebugToast(`Backend response status: ${response.status}`);
       
       const result_backend = await response.json();
-      console.log('📦 [DEBUG] Backend response body:', result_backend);
 
       if (result_backend.success) {
-        console.log('🎉 [DEBUG] Backend verification successful, navigating to canvas');
+        setDebugStatus('Backend verification successful!');
+        showDebugToast('Backend verification successful - navigating');
         // Verification successful - navigate to canvas (no toast needed)
         navigate('/canvas');
       } else {
-        console.log('❌ [DEBUG] Backend verification failed');
+        setDebugStatus('Backend verification failed');
+        showDebugToast('Backend verification failed', 'destructive');
         // Backend verification failed - this is a real error worth showing
         console.error('Backend verification failed:', result_backend);
         toast({
@@ -93,19 +107,22 @@ const LandingPage = () => {
         });
       }
     } catch (error) {
-      console.log('💥 [DEBUG] Exception caught in try block!');
-      console.log('💥 [DEBUG] Error type:', typeof error);
-      console.log('💥 [DEBUG] Error message:', error?.message);
-      console.log('💥 [DEBUG] Full error object:', error);
+      setDebugStatus('Exception caught!');
+      showDebugToast('💥 Exception caught in try block!', 'destructive');
+      showDebugToast(`Error: ${error?.message || 'Unknown error'}`, 'destructive');
       
       // Handle exceptions (X button click, network issues, etc.)
       // Reset button silently - no toast needed for user-initiated cancellations
       console.error('Verification error:', error);
     } finally {
-      console.log('🔄 [DEBUG] Finally block executing - resetting isVerifying to false');
+      setDebugStatus('Finally block executing');
+      showDebugToast('Finally block - resetting isVerifying to false');
       // ALWAYS reset isVerifying to ensure button is clickable again
       setIsVerifying(false);
-      console.log('✅ [DEBUG] isVerifying reset complete, handleCreateClick ending');
+      setTimeout(() => {
+        setDebugStatus('Ready');
+        showDebugToast('handleCreateClick complete');
+      }, 1000);
     }
   };
 
@@ -140,6 +157,12 @@ const LandingPage = () => {
         
         {/* Create Together Button Container with padding */}
         <div className="px-6 pb-12">
+          {/* Debug Status Display */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm font-medium text-blue-800">Debug Status:</div>
+            <div className="text-sm text-blue-600">{debugStatus}</div>
+          </div>
+          
           <Button 
             onClick={handleCreateClick}
             disabled={isVerifying}
