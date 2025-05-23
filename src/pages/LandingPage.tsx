@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
 import { MiniKit, VerifyCommandInput, VerificationLevel, type ISuccessResult } from '@worldcoin/minikit-js';
 import { toast } from '@/hooks/use-toast';
+import { LoaderCircle } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -112,9 +113,14 @@ const LandingPage = () => {
           <Button 
             onClick={handleCreateClick}
             disabled={isVerifying}
-            className="w-full bg-black hover:bg-gray-800 text-white py-6 h-auto rounded-xl text-xl font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+            className="w-full bg-black text-white py-6 h-auto rounded-xl text-xl font-medium transition-all shadow-md disabled:opacity-50"
           >
-            {isVerifying ? "Verifying..." : "Create Together"}
+            {isVerifying ? (
+              <>
+                <LoaderCircle className="animate-spin mr-2" size={20} />
+                Verifying...
+              </>
+            ) : "Create Together"}
           </Button>
         </div>
       </div>
