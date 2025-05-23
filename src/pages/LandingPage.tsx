@@ -10,8 +10,11 @@ const LandingPage = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   
   const handleCreateClick = async () => {
+    console.log('🚀 [DEBUG] handleCreateClick started');
+    
     // Check if MiniKit is available (running in World App)
     if (!MiniKit.isInstalled()) {
+      console.log('❌ [DEBUG] MiniKit not installed');
       toast({
         title: "World App Required",
         description: "This app must be opened within the World App to verify your identity.",
@@ -20,6 +23,7 @@ const LandingPage = () => {
       return;
     }
 
+    console.log('✅ [DEBUG] MiniKit installed, setting isVerifying to true');
     setIsVerifying(true);
 
     try {
@@ -29,15 +33,31 @@ const LandingPage = () => {
         verification_level: VerificationLevel.Orb,
       };
 
-      // Trigger World ID verification
-      const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
+      console.log('📋 [DEBUG] Verification payload configured:', verifyPayload);
+      console.log('🔄 [DEBUG] Calling MiniKit.commandsAsync.verify() - promise starting...');
+      
+      // This is where Cancel/X might hang
+      const result = await MiniKit.commandsAsync.verify(verifyPayload);
+      
+      console.log('✅ [DEBUG] MiniKit.commandsAsync.verify() resolved!');
+      console.log('📦 [DEBUG] Full result object:', result);
+      console.log('📦 [DEBUG] finalPayload:', result.finalPayload);
+      console.log('📦 [DEBUG] finalPayload.status:', result.finalPayload?.status);
+      
+      const { finalPayload } = result;
       
       // Handle all non-success responses (error, cancelled, rejected, etc.)
       if (finalPayload.status !== 'success') {
+        console.log('🚫 [DEBUG] Non-success status detected:', finalPayload.status);
+        console.log('🚫 [DEBUG] Full finalPayload:', finalPayload);
+        console.log('🔄 [DEBUG] Returning early (no backend call)');
         // User cancelled, closed popup, or verification failed at World ID level
         // Reset button silently - no toast needed for user-initiated cancellations
         return;
       }
+
+      console.log('✅ [DEBUG] Success status detected, proceeding to backend verification');
+      console.log('🌐 [DEBUG] Sending request to Edge Function...');
 
       // Send proof to our Edge Function for verification
       const response = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-world-id', {
@@ -53,27 +73,39 @@ const LandingPage = () => {
         }),
       });
 
-      const result = await response.json();
+      console.log('📡 [DEBUG] Backend response received, status:', response.status);
+      
+      const result_backend = await response.json();
+      console.log('📦 [DEBUG] Backend response body:', result_backend);
 
-      if (result.success) {
+      if (result_backend.success) {
+        console.log('🎉 [DEBUG] Backend verification successful, navigating to canvas');
         // Verification successful - navigate to canvas (no toast needed)
         navigate('/canvas');
       } else {
+        console.log('❌ [DEBUG] Backend verification failed');
         // Backend verification failed - this is a real error worth showing
-        console.error('Backend verification failed:', result);
+        console.error('Backend verification failed:', result_backend);
         toast({
           title: "Verification Failed",
-          description: result.error || "Unable to verify your identity. Please try again.",
+          description: result_backend.error || "Unable to verify your identity. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error) {
+      console.log('💥 [DEBUG] Exception caught in try block!');
+      console.log('💥 [DEBUG] Error type:', typeof error);
+      console.log('💥 [DEBUG] Error message:', error?.message);
+      console.log('💥 [DEBUG] Full error object:', error);
+      
       // Handle exceptions (X button click, network issues, etc.)
       // Reset button silently - no toast needed for user-initiated cancellations
       console.error('Verification error:', error);
     } finally {
+      console.log('🔄 [DEBUG] Finally block executing - resetting isVerifying to false');
       // ALWAYS reset isVerifying to ensure button is clickable again
       setIsVerifying(false);
+      console.log('✅ [DEBUG] isVerifying reset complete, handleCreateClick ending');
     }
   };
 
