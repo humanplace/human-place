@@ -1,4 +1,3 @@
-
 # Welcome to your Lovable project
 
 ## Project info
@@ -36,6 +35,19 @@ npm i
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
+
+## Environment Setup
+
+1. Copy the example environment file:
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Update `.env` with your Supabase project details:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon/public key
+
+These values can be found in your Supabase project settings under API.
 
 **Edit a file directly in GitHub**
 
