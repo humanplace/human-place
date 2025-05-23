@@ -31,24 +31,32 @@ const LandingPage = () => {
         verification_level: VerificationLevel.Orb, // Require Orb verification
       };
 
+      console.log('Starting World ID verification with payload:', verifyPayload);
+
       // Trigger World ID verification
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
+      
+      console.log('World ID verification completed:', finalPayload);
       
       if (finalPayload.status === 'error') {
         console.error('World ID verification error:', finalPayload);
         toast({
           title: "Verification Failed",
-          description: "Unable to verify your World ID. Please try again.",
+          description: `Unable to verify your World ID: ${(finalPayload as any).error_code || 'Unknown error'}`,
           variant: "destructive",
         });
         return;
       }
+
+      console.log('Sending proof to backend...');
 
       // Send proof to our Edge Function for verification
       const response = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-world-id', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ'
         },
         body: JSON.stringify({
           payload: finalPayload as ISuccessResult,
@@ -56,7 +64,11 @@ const LandingPage = () => {
         }),
       });
 
+      console.log('Backend response status:', response.status);
+      console.log('Backend response headers:', response.headers);
+
       const result = await response.json();
+      console.log('Backend response body:', result);
 
       if (result.success) {
         // Verification successful - navigate to canvas
@@ -78,7 +90,7 @@ const LandingPage = () => {
       console.error('Verification error:', error);
       toast({
         title: "Verification Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: `An unexpected error occurred: ${error.message}`,
         variant: "destructive",
       });
     } finally {

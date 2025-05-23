@@ -13,18 +13,28 @@ interface RequestPayload {
 }
 
 serve(async (req) => {
+  console.log('Edge Function called:', req.method, req.url)
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight')
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { payload, action, signal }: RequestPayload = await req.json()
+    console.log('Processing World ID verification request')
+    const requestBody = await req.text()
+    console.log('Request body:', requestBody)
+    
+    const { payload, action, signal }: RequestPayload = JSON.parse(requestBody)
+    console.log('Parsed payload:', { action, signal, payloadKeys: Object.keys(payload) })
     
     // Get app ID from environment variables
     const app_id = Deno.env.get('WORLD_APP_ID') as `app_${string}`
+    console.log('App ID found:', !!app_id, app_id?.substring(0, 10) + '...')
     
     if (!app_id) {
+      console.error('WORLD_APP_ID not found in environment')
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -37,10 +47,13 @@ serve(async (req) => {
       )
     }
 
+    console.log('Calling verifyCloudProof...')
     // Verify the proof with World ID Cloud API
     const verifyRes = await verifyCloudProof(payload, app_id, action, signal) as IVerifyResponse
+    console.log('verifyCloudProof result:', verifyRes)
 
     if (verifyRes.success) {
+      console.log('Verification successful!')
       // Verification successful
       return new Response(
         JSON.stringify({ 
@@ -73,7 +86,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Internal server error' 
+        error: 'Internal server error',
+        details: error.message 
       }),
       { 
         status: 500, 
