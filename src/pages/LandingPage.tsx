@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
@@ -8,18 +8,63 @@ import { toast } from '@/hooks/use-toast';
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [miniKitReady, setMiniKitReady] = useState(false);
+  
+  useEffect(() => {
+    // Try to initialize MiniKit when component mounts
+    const checkMiniKit = () => {
+      console.log('Checking MiniKit on mount...');
+      console.log('MiniKit available:', !!MiniKit);
+      console.log('MiniKit.isInstalled():', MiniKit?.isInstalled?.());
+      
+      if (MiniKit && MiniKit.isInstalled && MiniKit.isInstalled()) {
+        setMiniKitReady(true);
+        console.log('MiniKit is ready!');
+      } else {
+        console.log('MiniKit not ready yet...');
+        // Try again after a short delay
+        setTimeout(checkMiniKit, 1000);
+      }
+    };
+    
+    checkMiniKit();
+  }, []);
   
   const handleCreateClick = async () => {
-    // Check if MiniKit is available (running in World App)
-    // Add development bypass for local testing
-    const isDevelopment = import.meta.env.DEV;
+    // Debug MiniKit availability
+    console.log('=== MiniKit Debug Info ===');
+    console.log('MiniKit object:', MiniKit);
+    console.log('MiniKit.isInstalled():', MiniKit.isInstalled());
+    console.log('miniKitReady state:', miniKitReady);
+    console.log('Window object check:', typeof window !== 'undefined');
+    console.log('User agent:', navigator.userAgent);
+    console.log('Current URL:', window.location.href);
     
-    if (!MiniKit.isInstalled() && !isDevelopment) {
-      toast({
-        title: "World App Required",
-        description: "This app must be opened within the World App to verify your identity.",
-        variant: "destructive",
-      });
+    // Alternative World App detection methods
+    const isWorldApp = navigator.userAgent.includes('WorldApp') || 
+                       window.location.hostname.includes('world') ||
+                       typeof (window as any).WorldApp !== 'undefined';
+    console.log('Alternative World App detection:', isWorldApp);
+    console.log('Window.WorldApp:', (window as any).WorldApp);
+    
+    // Check if MiniKit is available (running in World App)
+    if (!MiniKit.isInstalled()) {
+      console.error('MiniKit not detected, even though user is in World App');
+      
+      // If we detect World App by other means, show different error
+      if (isWorldApp) {
+        toast({
+          title: "MiniKit Loading Issue",
+          description: "World App detected but MiniKit not ready. Please try again in a moment.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "World App Required",
+          description: "This app must be opened within the World App to verify your identity.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -31,16 +76,6 @@ const LandingPage = () => {
         action: 'canvas-access', // This should match your WORLD_ACTION_ID
         verification_level: VerificationLevel.Orb, // Require Orb verification
       };
-
-      // In development, skip World ID verification
-      if (isDevelopment && !MiniKit.isInstalled()) {
-        toast({
-          title: "🚧 Development Mode",
-          description: "Bypassing World ID verification for local testing.",
-        });
-        navigate('/canvas');
-        return;
-      }
 
       // Trigger World ID verification
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
