@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import TiledBackground from '@/components/TiledBackground';
@@ -11,8 +11,6 @@ const LandingPage = () => {
   
   const handleCreateClick = async () => {
     // Check if MiniKit is available (running in World App)
-    console.log('MiniKit.isInstalled():', MiniKit.isInstalled());
-    
     if (!MiniKit.isInstalled()) {
       toast({
         title: "World App Required",
@@ -27,28 +25,22 @@ const LandingPage = () => {
     try {
       // Configure the verification payload
       const verifyPayload: VerifyCommandInput = {
-        action: 'human-verification', // This matches your WORLD_ACTION_ID from Developer Portal
-        verification_level: VerificationLevel.Orb, // Require Orb verification
+        action: 'human-verification',
+        verification_level: VerificationLevel.Orb,
       };
-
-      console.log('Starting World ID verification with payload:', verifyPayload);
 
       // Trigger World ID verification
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
       
-      console.log('World ID verification completed:', finalPayload);
-      
       if (finalPayload.status === 'error') {
-        console.error('World ID verification error:', finalPayload);
+        console.error('World ID verification failed:', finalPayload);
         toast({
           title: "Verification Failed",
-          description: `Unable to verify your World ID: ${(finalPayload as any).error_code || 'Unknown error'}`,
+          description: "Unable to verify your World ID. Please ensure you are Orb verified and try again.",
           variant: "destructive",
         });
         return;
       }
-
-      console.log('Sending proof to backend...');
 
       // Send proof to our Edge Function for verification
       const response = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-world-id', {
@@ -60,37 +52,29 @@ const LandingPage = () => {
         },
         body: JSON.stringify({
           payload: finalPayload as ISuccessResult,
-          action: 'human-verification', // This matches your WORLD_ACTION_ID from Developer Portal
+          action: 'human-verification',
         }),
       });
 
-      console.log('Backend response status:', response.status);
-      console.log('Backend response headers:', response.headers);
-
       const result = await response.json();
-      console.log('Backend response body:', result);
 
       if (result.success) {
-        // Verification successful - navigate to canvas
-        toast({
-          title: "✅ Verification Successful!",
-          description: "Welcome to Human Place. You are now verified to create together.",
-        });
+        // Verification successful - navigate to canvas (no toast needed)
         navigate('/canvas');
       } else {
         // Verification failed
         console.error('Backend verification failed:', result);
         toast({
           title: "Verification Failed",
-          description: result.error || "Unable to verify your World ID. Please try again.",
+          description: result.error || "Unable to verify your identity. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Verification error:', error);
       toast({
-        title: "Verification Error",
-        description: `An unexpected error occurred: ${error.message}`,
+        title: "Something Went Wrong",
+        description: "Please check your connection and try again.",
         variant: "destructive",
       });
     } finally {

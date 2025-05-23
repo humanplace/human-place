@@ -13,36 +13,25 @@ interface RequestPayload {
 }
 
 serve(async (req) => {
-  console.log('Edge Function called:', req.method, req.url)
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight')
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log('Processing World ID verification request')
-    const requestBody = await req.text()
-    console.log('Request body:', requestBody)
-    
-    const { payload, action, signal }: RequestPayload = JSON.parse(requestBody)
-    console.log('Parsed payload:', { action, signal, payloadKeys: Object.keys(payload) })
+    const { payload, action, signal }: RequestPayload = await req.json()
     
     // Get environment variables
     const app_id = Deno.env.get('WORLD_APP_ID') as `app_${string}`
     const expected_action = Deno.env.get('WORLD_ACTION_ID')
     
-    console.log('App ID found:', !!app_id, app_id?.substring(0, 15) + '...')
-    console.log('Expected action:', expected_action)
-    console.log('Received action:', action)
-    
+    // Validate configuration
     if (!app_id) {
-      console.error('WORLD_APP_ID not found in environment')
+      console.error('WORLD_APP_ID not configured')
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'World App ID not configured' 
+          error: 'Service configuration error' 
         }),
         { 
           status: 500, 
@@ -52,11 +41,11 @@ serve(async (req) => {
     }
 
     if (!expected_action) {
-      console.error('WORLD_ACTION_ID not found in environment')
+      console.error('WORLD_ACTION_ID not configured')
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'World Action ID not configured' 
+          error: 'Service configuration error' 
         }),
         { 
           status: 500, 
@@ -65,12 +54,13 @@ serve(async (req) => {
       )
     }
 
+    // Validate action matches expected value
     if (action !== expected_action) {
-      console.error(`Action ID mismatch: received "${action}", expected "${expected_action}"`)
+      console.error(`Action mismatch: received "${action}", expected "${expected_action}"`)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Action ID mismatch: expected "${expected_action}"` 
+          error: 'Invalid verification request' 
         }),
         { 
           status: 400, 
@@ -79,14 +69,10 @@ serve(async (req) => {
       )
     }
 
-    console.log('Calling verifyCloudProof...')
     // Verify the proof with World ID Cloud API
     const verifyRes = await verifyCloudProof(payload, app_id, action, signal) as IVerifyResponse
-    console.log('verifyCloudProof result:', verifyRes)
 
     if (verifyRes.success) {
-      console.log('Verification successful!')
-      // Verification successful
       return new Response(
         JSON.stringify({ 
           success: true,
@@ -99,13 +85,12 @@ serve(async (req) => {
         }
       )
     } else {
-      // Verification failed
+      // Log technical details but return user-friendly message
       console.error('World ID verification failed:', verifyRes)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: verifyRes.detail || 'Verification failed',
-          code: verifyRes.code
+          error: 'Verification failed. Please ensure you are Orb verified.'
         }),
         { 
           status: 400, 
@@ -114,12 +99,11 @@ serve(async (req) => {
       )
     }
   } catch (error) {
-    console.error('Error in verify-world-id function:', error)
+    console.error('Verification error:', error)
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Internal server error',
-        details: error.message 
+        error: 'Service temporarily unavailable. Please try again.' 
       }),
       { 
         status: 500, 
