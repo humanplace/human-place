@@ -32,13 +32,10 @@ const LandingPage = () => {
       // Trigger World ID verification
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
       
-      if (finalPayload.status === 'error') {
-        console.error('World ID verification failed:', finalPayload);
-        toast({
-          title: "Verification Failed",
-          description: "Unable to verify your World ID. Please ensure you are Orb verified and try again.",
-          variant: "destructive",
-        });
+      // Handle all non-success responses (error, cancelled, rejected, etc.)
+      if (finalPayload.status !== 'success') {
+        // User cancelled, closed popup, or verification failed at World ID level
+        // Reset button silently - no toast needed for user-initiated cancellations
         return;
       }
 
@@ -62,7 +59,7 @@ const LandingPage = () => {
         // Verification successful - navigate to canvas (no toast needed)
         navigate('/canvas');
       } else {
-        // Verification failed
+        // Backend verification failed - this is a real error worth showing
         console.error('Backend verification failed:', result);
         toast({
           title: "Verification Failed",
@@ -71,13 +68,11 @@ const LandingPage = () => {
         });
       }
     } catch (error) {
+      // Handle exceptions (X button click, network issues, etc.)
+      // Reset button silently - no toast needed for user-initiated cancellations
       console.error('Verification error:', error);
-      toast({
-        title: "Something Went Wrong",
-        description: "Please check your connection and try again.",
-        variant: "destructive",
-      });
     } finally {
+      // ALWAYS reset isVerifying to ensure button is clickable again
       setIsVerifying(false);
     }
   };
