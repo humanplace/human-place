@@ -11,7 +11,10 @@ const LandingPage = () => {
   
   const handleCreateClick = async () => {
     // Check if MiniKit is available (running in World App)
-    if (!MiniKit.isInstalled()) {
+    // Add development bypass for local testing
+    const isDevelopment = import.meta.env.DEV;
+    
+    if (!MiniKit.isInstalled() && !isDevelopment) {
       toast({
         title: "World App Required",
         description: "This app must be opened within the World App to verify your identity.",
@@ -28,6 +31,16 @@ const LandingPage = () => {
         action: 'canvas-access', // This should match your WORLD_ACTION_ID
         verification_level: VerificationLevel.Orb, // Require Orb verification
       };
+
+      // In development, skip World ID verification
+      if (isDevelopment && !MiniKit.isInstalled()) {
+        toast({
+          title: "🚧 Development Mode",
+          description: "Bypassing World ID verification for local testing.",
+        });
+        navigate('/canvas');
+        return;
+      }
 
       // Trigger World ID verification
       const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
