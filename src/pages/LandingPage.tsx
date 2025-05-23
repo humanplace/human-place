@@ -35,9 +35,9 @@ const LandingPage = () => {
       return;
     }
 
-    setDebugStatus('Setting isVerifying = true');
-    showDebugToast('MiniKit installed, setting isVerifying = true');
-    setIsVerifying(true);
+    setDebugStatus('Showing MiniKit popup...');
+    showDebugToast('MiniKit installed, showing verification popup');
+    // Note: Button stays clickable until MiniKit succeeds
 
     try {
       // Configure the verification payload
@@ -49,7 +49,7 @@ const LandingPage = () => {
       setDebugStatus('Calling MiniKit.verify() - WAITING...');
       showDebugToast('Calling MiniKit.commandsAsync.verify() - promise starting');
       
-      // This is where Cancel/X might hang
+      // This is where Cancel/X might hang - but button stays clickable!
       const result = await MiniKit.commandsAsync.verify(verifyPayload);
       
       setDebugStatus('MiniKit.verify() RESOLVED!');
@@ -64,12 +64,14 @@ const LandingPage = () => {
         showDebugToast(`Non-success status: ${finalPayload.status}`);
         showDebugToast('Returning early (no backend call)');
         // User cancelled, closed popup, or verification failed at World ID level
-        // Reset button silently - no toast needed for user-initiated cancellations
+        // Button stays clickable - user can try again immediately
         return;
       }
 
-      setDebugStatus('Success! Calling backend...');
-      showDebugToast('Success status - proceeding to backend verification');
+      // SUCCESS! Now we disable the button and call backend
+      setDebugStatus('Success! Disabling button and calling backend...');
+      showDebugToast('Success status - NOW disabling button for backend call');
+      setIsVerifying(true); // MOVED HERE - only disable when backend work starts
 
       // Send proof to our Edge Function for verification
       const response = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-world-id', {
@@ -112,7 +114,7 @@ const LandingPage = () => {
       showDebugToast(`Error: ${error?.message || 'Unknown error'}`, 'destructive');
       
       // Handle exceptions (X button click, network issues, etc.)
-      // Reset button silently - no toast needed for user-initiated cancellations
+      // Button will be reset in finally block
       console.error('Verification error:', error);
     } finally {
       setDebugStatus('Finally block executing');
