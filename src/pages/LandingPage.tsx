@@ -5,10 +5,12 @@ import TiledBackground from '@/components/TiledBackground';
 import { MiniKit, VerifyCommandInput, VerificationLevel, type ISuccessResult } from '@worldcoin/minikit-js';
 import { toast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
+import { useVerification } from '@/context/VerificationContext';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [isVerifying, setIsVerifying] = useState(false);
+  const { setVerified } = useVerification();
   
   const handleCreateClick = async () => {
     // Check if MiniKit is available (running in World App)
@@ -59,6 +61,14 @@ const LandingPage = () => {
       const result_backend = await response.json();
 
       if (result_backend.success) {
+        // Store verification in sessionStorage via context
+        setVerified({
+          verified: true,
+          nullifierHash: finalPayload.nullifier_hash,
+          verificationLevel: finalPayload.verification_level,
+          timestamp: Date.now()
+        });
+        
         // Verification successful - navigate to canvas
         navigate('/canvas');
       } else {
