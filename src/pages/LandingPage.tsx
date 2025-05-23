@@ -27,7 +27,7 @@ const LandingPage = () => {
     try {
       // Configure the verification payload
       const verifyPayload: VerifyCommandInput = {
-        action: 'canvas-access', // This should match your WORLD_ACTION_ID
+        action: 'human-verification', // This matches your WORLD_ACTION_ID from Developer Portal
         verification_level: VerificationLevel.Orb, // Require Orb verification
       };
 
@@ -60,7 +60,7 @@ const LandingPage = () => {
         },
         body: JSON.stringify({
           payload: finalPayload as ISuccessResult,
-          action: 'canvas-access',
+          action: 'human-verification', // This matches your WORLD_ACTION_ID from Developer Portal
         }),
       });
 

@@ -29,9 +29,13 @@ serve(async (req) => {
     const { payload, action, signal }: RequestPayload = JSON.parse(requestBody)
     console.log('Parsed payload:', { action, signal, payloadKeys: Object.keys(payload) })
     
-    // Get app ID from environment variables
+    // Get environment variables
     const app_id = Deno.env.get('WORLD_APP_ID') as `app_${string}`
-    console.log('App ID found:', !!app_id, app_id?.substring(0, 10) + '...')
+    const expected_action = Deno.env.get('WORLD_ACTION_ID')
+    
+    console.log('App ID found:', !!app_id, app_id?.substring(0, 15) + '...')
+    console.log('Expected action:', expected_action)
+    console.log('Received action:', action)
     
     if (!app_id) {
       console.error('WORLD_APP_ID not found in environment')
@@ -42,6 +46,34 @@ serve(async (req) => {
         }),
         { 
           status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    if (!expected_action) {
+      console.error('WORLD_ACTION_ID not found in environment')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'World Action ID not configured' 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    if (action !== expected_action) {
+      console.error(`Action ID mismatch: received "${action}", expected "${expected_action}"`)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Action ID mismatch: expected "${expected_action}"` 
+        }),
+        { 
+          status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
