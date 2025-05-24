@@ -18,7 +18,6 @@ interface CanvasContextType {
 const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
@@ -35,10 +34,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         const cachedData = sessionStorage.getItem(CANVAS_CACHE_KEY);
         if (cachedData) {
           try {
-            const { data, timestamp } = JSON.parse(cachedData);
-            const isExpired = Date.now() - timestamp > CACHE_DURATION;
+            const data = JSON.parse(cachedData);
             
-            if (!isExpired && data && data.length > 0) {
+            if (data && data.length > 0) {
               if (import.meta.env.DEV) {
                 console.log(`Using cached canvas data (${data.length} pixels)`);
               }
@@ -67,12 +65,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           console.log(`Successfully fetched ${data.length} pixels from Supabase`);
         }
         
-        // Cache the data
+        // Cache the data (without timestamp - cache lasts entire session)
         try {
-          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify({
-            data,
-            timestamp: Date.now()
-          }));
+          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
         } catch (error) {
           console.error('Error caching canvas data:', error);
         }
