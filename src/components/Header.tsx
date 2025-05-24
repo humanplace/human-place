@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
+import { ColorCode } from '@/context/canvasTypes';
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
@@ -23,6 +23,29 @@ const Header = () => {
     } catch (error) {
       console.error('Error updating cache:', error);
     }
+  };
+
+  // Helper function to convert current state to cache format
+  const convertStateToCache = () => {
+    const cacheData: { x: number; y: number; color: number; updated_at: string }[] = [];
+    
+    if (state.pixels) {
+      for (let y = 0; y < CANVAS_SIZE; y++) {
+        for (let x = 0; x < CANVAS_SIZE; x++) {
+          const color = state.pixels[y][x];
+          if (color !== undefined) {
+            cacheData.push({
+              x,
+              y,
+              color: color as number,
+              updated_at: new Date().toISOString() // Use current time for cache updates
+            });
+          }
+        }
+      }
+    }
+    
+    return cacheData;
   };
 
   const handleZoomIn = () => {
@@ -76,10 +99,12 @@ const Header = () => {
             }
           });
 
-          // For differential updates, we need to get the complete current state and update cache
-          // Fetch all pixels to update the cache with the complete dataset
-          const allPixels = await fetchAllCanvasPixels();
-          updateCache(allPixels);
+          // Convert the updated state to cache format (more efficient than fetching all pixels again)
+          // We need to do this in a setTimeout to ensure state has been updated
+          setTimeout(() => {
+            const cacheData = convertStateToCache();
+            updateCache(cacheData);
+          }, 0);
         }
         
         // Finished updating the canvas
