@@ -2,19 +2,16 @@
 import React from 'react';
 import Header from './Header';
 import ColorPicker from './ColorPicker';
-import { CanvasProvider } from '@/context/CanvasContext';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <CanvasProvider>
-      <div className="app-container flex flex-col h-screen w-screen overflow-hidden bg-white">
-        <Header />
-        <main className="flex-1 overflow-hidden flex items-center justify-center bg-white">
-          {children}
-        </main>
-        <ColorPicker />
-      </div>
-    </CanvasProvider>
+    <div className="app-container flex flex-col h-screen w-screen overflow-hidden bg-white">
+      <Header />
+      <main className="flex-1 overflow-hidden flex items-center justify-center bg-white">
+        {children}
+      </main>
+      <ColorPicker />
+    </div>
   );
 };
 

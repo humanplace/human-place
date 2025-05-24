@@ -17,22 +17,64 @@ interface CanvasContextType {
 
 const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 
+const CANVAS_CACHE_KEY = 'canvas-data-cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(canvasReducer, initialState);
   
-  // Load canvas data from Supabase on mount
+  // Load canvas data from cache or Supabase on mount
   useEffect(() => {
     const loadCanvasData = async () => {
       try {
         // Set loading state to true
         dispatch({ type: 'SET_LOADING', isLoading: true });
         
-        // Initial load: Fetch ALL the pixels from Supabase
+        // Check for cached data first
+        const cachedData = sessionStorage.getItem(CANVAS_CACHE_KEY);
+        if (cachedData) {
+          try {
+            const { data, timestamp } = JSON.parse(cachedData);
+            const isExpired = Date.now() - timestamp > CACHE_DURATION;
+            
+            if (!isExpired && data && data.length > 0) {
+              if (import.meta.env.DEV) {
+                console.log(`Using cached canvas data (${data.length} pixels)`);
+              }
+              
+              // Use cached data
+              const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
+              data.forEach((pixel: any) => {
+                if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
+                  loadedPixels[pixel.y][pixel.x] = pixel.color;
+                }
+              });
+              
+              dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+              return;
+            }
+          } catch (error) {
+            console.error('Error parsing cached data:', error);
+            sessionStorage.removeItem(CANVAS_CACHE_KEY);
+          }
+        }
+        
+        // No valid cache, fetch from Supabase
         const data = await fetchAllCanvasPixels();
 
         if (import.meta.env.DEV) {
-          console.log(`Successfully fetched ${data.length} pixels`);
+          console.log(`Successfully fetched ${data.length} pixels from Supabase`);
+        }
+        
+        // Cache the data
+        try {
+          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify({
+            data,
+            timestamp: Date.now()
+          }));
+        } catch (error) {
+          console.error('Error caching canvas data:', error);
         }
         
         // If data exists, convert the flat array of pixels to our sparse format
@@ -72,8 +114,6 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     };
     
     loadCanvasData();
-    
-    // No automatic refresh interval anymore
     
   }, []);
   
