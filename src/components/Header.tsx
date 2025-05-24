@@ -1,14 +1,29 @@
+
 import React from 'react';
 import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
 
+const CANVAS_CACHE_KEY = 'canvas-data-cache';
+
 const Header = () => {
   const { state, dispatch } = useCanvas();
   
   // Find the current zoom index and calculate next/previous
   const currentZoomIndex = ZOOM_LEVELS.findIndex(zoom => zoom === state.zoom);
+
+  // Helper function to update the cache with current pixel data
+  const updateCache = (pixelData: { x: number; y: number; color: number; updated_at: string }[]) => {
+    try {
+      sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(pixelData));
+      if (import.meta.env.DEV) {
+        console.log(`Cache updated with ${pixelData.length} pixels`);
+      }
+    } catch (error) {
+      console.error('Error updating cache:', error);
+    }
+  };
 
   const handleZoomIn = () => {
     if (currentZoomIndex < ZOOM_LEVELS.length - 1) {
@@ -60,6 +75,11 @@ const Header = () => {
               });
             }
           });
+
+          // For differential updates, we need to get the complete current state and update cache
+          // Fetch all pixels to update the cache with the complete dataset
+          const allPixels = await fetchAllCanvasPixels();
+          updateCache(allPixels);
         }
         
         // Finished updating the canvas
@@ -90,6 +110,9 @@ const Header = () => {
 
           // Update the canvas state with loaded pixels
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+
+          // Update cache with the fresh data
+          updateCache(data);
 
           toast({
             title: "✅ Canvas Refreshed!",
