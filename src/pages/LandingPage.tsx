@@ -99,10 +99,10 @@ const LandingPage = () => {
       <div className="flex flex-col h-full w-full relative z-10 bg-white/50 backdrop-blur-sm">
         {/* Logo Section */}
         <div className="flex-1 flex items-center justify-center p-8">
-          {/* Logo container with background matching the page background */}
+          {/* Logo container with solid white background */}
           <div className="relative">
-            {/* Background layer - exactly matches page background styling */}
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm"></div>
+            {/* Background layer - solid white to completely hide tiles */}
+            <div className="absolute inset-0 bg-white"></div>
             {/* Inlined SVG logo */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
