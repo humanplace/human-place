@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
+import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE, type ColorCode } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
@@ -29,17 +29,16 @@ const Header = () => {
     const cacheData: { x: number; y: number; color: number; updated_at: string }[] = [];
     
     if (state.pixels) {
+      // Convert all 10,000 pixels from the fully populated canvas
       for (let y = 0; y < CANVAS_SIZE; y++) {
         for (let x = 0; x < CANVAS_SIZE; x++) {
           const color = state.pixels[y][x];
-          if (color !== undefined) {
-            cacheData.push({
-              x,
-              y,
-              color: color as number,
-              updated_at: new Date().toISOString() // Use current time for cache updates
-            });
-          }
+          cacheData.push({
+            x,
+            y,
+            color: color as number,
+            updated_at: new Date().toISOString() // Use current time for cache updates
+          });
         }
       }
     }
@@ -121,11 +120,13 @@ const Header = () => {
           console.log(`Initial Refresh: fetched ${data.length} pixels`);
         }
         
-        if (data && data.length > 0) {
-          // Create a sparse canvas without filling with any default color
-          const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
+        if (data && data.length === CANVAS_SIZE * CANVAS_SIZE) {
+          // Initialize fully populated canvas
+          const loadedPixels: ColorCode[][] = Array(CANVAS_SIZE)
+            .fill(null)
+            .map(() => Array(CANVAS_SIZE).fill(1)); // Default to white if pixel missing
           
-          // Apply all the pixels from Supabase
+          // Apply all pixels from Supabase
           data.forEach(pixel => {
             if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
               loadedPixels[pixel.y][pixel.x] = pixel.color;
@@ -142,11 +143,11 @@ const Header = () => {
             title: "✅ Canvas Refreshed!",
           });
         } else {
-          // If no data, show an error message
+          // If data is incomplete, show an error message
           dispatch({ type: 'SET_LOADING', isLoading: false });
           toast({
-            title: "Canvas data missing",
-            description: "No pixel data found on the server.",
+            title: "Incomplete canvas data",
+            description: `Expected ${CANVAS_SIZE * CANVAS_SIZE} pixels but got ${data?.length || 0}.`,
             variant: "destructive",
           });
         }

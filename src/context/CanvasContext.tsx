@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
@@ -24,11 +23,14 @@ function getInitialCanvasState(): { state: CanvasState; hasCache: boolean } {
   try {
     const cached = sessionStorage.getItem(CANVAS_CACHE_KEY);
     if (cached) {
-        const data: { x: number; y: number; color: ColorCode }[] = JSON.parse(cached);
-        if (Array.isArray(data) && data.length > 0) {
-          const loadedPixels = Array(CANVAS_SIZE)
-            .fill(null)
-            .map(() => Array(CANVAS_SIZE));
+      const data: { x: number; y: number; color: ColorCode }[] = JSON.parse(cached);
+      if (Array.isArray(data) && data.length === CANVAS_SIZE * CANVAS_SIZE) {
+        // Initialize fully populated canvas
+        const loadedPixels: ColorCode[][] = Array(CANVAS_SIZE)
+          .fill(null)
+          .map(() => Array(CANVAS_SIZE).fill(1)); // Default to white (1) if not specified
+        
+        // Fill in all pixels from cache
         data.forEach((pixel) => {
           if (
             pixel.x >= 0 &&
@@ -39,6 +41,7 @@ function getInitialCanvasState(): { state: CanvasState; hasCache: boolean } {
             loadedPixels[pixel.y][pixel.x] = pixel.color;
           }
         });
+        
         return { state: { ...initialState, pixels: loadedPixels, isLoading: false }, hasCache: true };
       }
     }
@@ -70,37 +73,42 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           console.log(`Successfully fetched ${data.length} pixels from Supabase`);
         }
 
+        // Validate we have a fully populated canvas
+        if (data.length !== CANVAS_SIZE * CANVAS_SIZE) {
+          console.error(`Expected ${CANVAS_SIZE * CANVAS_SIZE} pixels, but got ${data.length}`);
+          toast({
+            title: 'Incomplete canvas data',
+            description: 'The canvas data appears to be incomplete.',
+            variant: 'destructive',
+          });
+          dispatch({ type: 'SET_LOADING', isLoading: false });
+          return;
+        }
+
         try {
           sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
         } catch (error) {
           console.error('Error caching canvas data:', error);
         }
 
-        if (data && data.length > 0) {
-          const loadedPixels = Array(CANVAS_SIZE)
-            .fill(null)
-            .map(() => Array(CANVAS_SIZE));
+        // Initialize fully populated canvas
+        const loadedPixels: ColorCode[][] = Array(CANVAS_SIZE)
+          .fill(null)
+          .map(() => Array(CANVAS_SIZE).fill(1)); // Default to white (1)
 
-          data.forEach((pixel: { x: number; y: number; color: ColorCode }) => {
-            if (
-              pixel.x >= 0 &&
-              pixel.x < CANVAS_SIZE &&
-              pixel.y >= 0 &&
-              pixel.y < CANVAS_SIZE
-            ) {
-              loadedPixels[pixel.y][pixel.x] = pixel.color;
-            }
-          });
+        // Fill in all pixels from fetched data
+        data.forEach((pixel: { x: number; y: number; color: ColorCode }) => {
+          if (
+            pixel.x >= 0 &&
+            pixel.x < CANVAS_SIZE &&
+            pixel.y >= 0 &&
+            pixel.y < CANVAS_SIZE
+          ) {
+            loadedPixels[pixel.y][pixel.x] = pixel.color;
+          }
+        });
 
-          dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-        } else {
-          toast({
-            title: 'Canvas data missing',
-            description: 'No pixel data found on the server.',
-            variant: 'destructive',
-          });
-          dispatch({ type: 'SET_LOADING', isLoading: false });
-        }
+        dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
       } catch (error) {
         console.error('Failed to load canvas data:', error);
 

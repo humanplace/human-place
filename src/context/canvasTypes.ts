@@ -1,4 +1,3 @@
-
 // Canvas dimensions and constants
 export const CANVAS_SIZE = 100;
 export const MAX_ZOOM_LEVEL = 64;
@@ -28,7 +27,7 @@ export const COLORS: ColorCode[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // Canvas state interface
 export interface CanvasState {
-  pixels: (ColorCode | undefined)[][] | null;  // Sparse array with undefined for pixels not in the database
+  pixels: ColorCode[][] | null;  // Fully populated array - null only during initial load
   isLoading: boolean;  // Loading state flag
   pendingPixel: { x: number; y: number; color: ColorCode } | null;
   position: { x: number; y: number };
@@ -45,5 +44,5 @@ export type CanvasAction =
   | { type: 'SET_POSITION'; x: number; y: number }
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: ColorCode }
-  | { type: 'INITIALIZE_CANVAS'; pixels: (ColorCode | undefined)[][] }
+  | { type: 'INITIALIZE_CANVAS'; pixels: ColorCode[][] }  // Fully populated 100x100 array
   | { type: 'SET_LOADING'; isLoading: boolean };

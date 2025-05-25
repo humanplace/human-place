@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { 
@@ -81,11 +80,9 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ containerRef, canvasRef
         const pixelX = x * tileSize - viewport.offsetX;
         const pixelY = y * tileSize - viewport.offsetY;
         
-        // Draw the pixel only if it has a color (not undefined)
-        if (state.pixels[gridY] && state.pixels[gridY][gridX] !== undefined) {
-          const pixelColor = state.pixels[gridY][gridX] as ColorCode;
-          drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
-        }
+        // Draw the pixel (all pixels have a color in a fully populated canvas)
+        const pixelColor = state.pixels[gridY][gridX] as ColorCode;
+        drawPixel(ctx, pixelX, pixelY, tileSize, pixelColor);
         
         // Draw grid lines for each tile when zoom level is 16 or higher
         if (tileSize >= 16) {

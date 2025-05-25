@@ -1,11 +1,10 @@
-
 import { CanvasState, CanvasAction } from './canvasTypes';
 import { updatePixelInSupabase } from './canvasUtils';
 import { CANVAS_SIZE } from './canvasTypes';
 
-// Initial state - we start with null pixels array (loading state)
+// Initial state - canvas starts null until fully loaded from database
 export const initialState: CanvasState = {
-  pixels: null,  // Start with null, will be populated from database
+  pixels: null,  // Start with null, will be fully populated from database
   isLoading: true,  // Start in loading state
   pendingPixel: null,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
@@ -78,12 +77,27 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
     case 'SELECT_COLOR':
       return { ...state, selectedColor: action.color };
       
-    case 'INITIALIZE_CANVAS':
+    case 'INITIALIZE_CANVAS': {
+      // Validate that we have a fully populated canvas
+      if (!action.pixels || action.pixels.length !== CANVAS_SIZE) {
+        console.error('Invalid canvas data: expected full canvas');
+        return state;
+      }
+      
+      // Ensure each row is fully populated
+      for (let i = 0; i < CANVAS_SIZE; i++) {
+        if (!action.pixels[i] || action.pixels[i].length !== CANVAS_SIZE) {
+          console.error(`Invalid canvas data: row ${i} is not fully populated`);
+          return state;
+        }
+      }
+      
       return { 
         ...state, 
         pixels: action.pixels,
-        isLoading: false  // Set loading to false when canvas is initialized
+        isLoading: false 
       };
+    }
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.isLoading };
