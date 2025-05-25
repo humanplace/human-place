@@ -19,91 +19,128 @@ const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
+// Helper to initialize state from sessionStorage before first render
+function initCanvasState(): CanvasState {
+  try {
+    const cached = sessionStorage.getItem(CANVAS_CACHE_KEY);
+    if (cached) {
+        const data: { x: number; y: number; color: ColorCode }[] = JSON.parse(cached);
+        if (Array.isArray(data) && data.length > 0) {
+          const loadedPixels = Array(CANVAS_SIZE)
+            .fill(null)
+            .map(() => Array(CANVAS_SIZE));
+        data.forEach((pixel) => {
+          if (
+            pixel.x >= 0 &&
+            pixel.x < CANVAS_SIZE &&
+            pixel.y >= 0 &&
+            pixel.y < CANVAS_SIZE
+          ) {
+            loadedPixels[pixel.y][pixel.x] = pixel.color;
+          }
+        });
+        return { ...initialState, pixels: loadedPixels, isLoading: false };
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing cached canvas data:', error);
+    sessionStorage.removeItem(CANVAS_CACHE_KEY);
+  }
+  return initialState;
+}
+
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(canvasReducer, initialState);
+  const [state, dispatch] = useReducer(canvasReducer, initialState, initCanvasState);
   
   // Load canvas data from cache or Supabase on mount
   useEffect(() => {
     const loadCanvasData = async () => {
       try {
-        // Set loading state to true
-        dispatch({ type: 'SET_LOADING', isLoading: true });
-        
-        // Check for cached data first
         const cachedData = sessionStorage.getItem(CANVAS_CACHE_KEY);
+        let parsed: { x: number; y: number; color: ColorCode }[] | null = null;
         if (cachedData) {
           try {
-            const data = JSON.parse(cachedData);
-            
-            if (data && data.length > 0) {
-              if (import.meta.env.DEV) {
-                console.log(`Using cached canvas data (${data.length} pixels)`);
-              }
-              
-              // Use cached data
-              const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
-              data.forEach((pixel: any) => {
-                if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
-                  loadedPixels[pixel.y][pixel.x] = pixel.color;
-                }
-              });
-              
-              dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-              return;
-            }
+            parsed = JSON.parse(cachedData);
           } catch (error) {
             console.error('Error parsing cached data:', error);
             sessionStorage.removeItem(CANVAS_CACHE_KEY);
           }
         }
-        
-        // No valid cache, fetch from Supabase
-        const data = await fetchAllCanvasPixels();
 
-        if (import.meta.env.DEV) {
-          console.log(`Successfully fetched ${data.length} pixels from Supabase`);
+        if (!parsed || parsed.length === 0) {
+          dispatch({ type: 'SET_LOADING', isLoading: true });
         }
-        
-        // Cache the data (without timestamp - cache lasts entire session)
-        try {
-          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
-        } catch (error) {
-          console.error('Error caching canvas data:', error);
-        }
-        
-        // If data exists, convert the flat array of pixels to our sparse format
-        if (data && data.length > 0) {
-          // Create a sparse canvas without filling with default colors
-          const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
-          
-          // Apply all the pixels from Supabase
-          data.forEach(pixel => {
-            if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
-              loadedPixels[pixel.y][pixel.x] = pixel.color;
-            }
-          });
 
-          // Update the canvas state with loaded pixels
+        if (parsed && parsed.length > 0 && !state.pixels) {
+          if (import.meta.env.DEV) {
+            console.log(`Using cached canvas data (${parsed.length} pixels)`);
+          }
+
+        const loadedPixels = Array(CANVAS_SIZE)
+          .fill(null)
+          .map(() => Array(CANVAS_SIZE));
+        parsed.forEach((pixel) => {
+          if (
+            pixel.x >= 0 &&
+            pixel.x < CANVAS_SIZE &&
+            pixel.y >= 0 &&
+            pixel.y < CANVAS_SIZE
+          ) {
+            loadedPixels[pixel.y][pixel.x] = pixel.color;
+          }
+        });
+
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-        } else {
-          // If no data, show an error message
-          toast({
-            title: "Canvas data missing",
-            description: "No pixel data found on the server.",
-            variant: "destructive",
-          });
-          dispatch({ type: 'SET_LOADING', isLoading: false });
+        }
+
+        if (!parsed || parsed.length === 0) {
+          const data = await fetchAllCanvasPixels();
+
+          if (import.meta.env.DEV) {
+            console.log(`Successfully fetched ${data.length} pixels from Supabase`);
+          }
+
+          try {
+            sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
+          } catch (error) {
+            console.error('Error caching canvas data:', error);
+          }
+
+          if (data && data.length > 0) {
+            const loadedPixels = Array(CANVAS_SIZE)
+              .fill(null)
+              .map(() => Array(CANVAS_SIZE));
+
+            data.forEach((pixel: { x: number; y: number; color: ColorCode }) => {
+              if (
+                pixel.x >= 0 &&
+                pixel.x < CANVAS_SIZE &&
+                pixel.y >= 0 &&
+                pixel.y < CANVAS_SIZE
+              ) {
+                loadedPixels[pixel.y][pixel.x] = pixel.color;
+              }
+            });
+
+            dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
+          } else {
+            toast({
+              title: 'Canvas data missing',
+              description: 'No pixel data found on the server.',
+              variant: 'destructive',
+            });
+            dispatch({ type: 'SET_LOADING', isLoading: false });
+          }
         }
       } catch (error) {
         console.error('Failed to load canvas data:', error);
-        
-        // Set loading to false and display error toast
+
         dispatch({ type: 'SET_LOADING', isLoading: false });
         toast({
-          title: "Failed to load canvas",
+          title: 'Failed to load canvas',
           description: "Couldn't connect to the database. Please try again later.",
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     };

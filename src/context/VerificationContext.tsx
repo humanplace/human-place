@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
 
 interface VerificationData {
@@ -20,21 +20,18 @@ const VerificationContext = createContext<VerificationContextType | undefined>(u
 const STORAGE_KEY = 'worldIdVerified';
 
 export function VerificationProvider({ children }: { children: React.ReactNode }) {
-  const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
-
-  // Check sessionStorage on mount
-  useEffect(() => {
+  const [verificationData, setVerificationData] = useState<VerificationData | null>(() => {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const data = JSON.parse(stored);
-        setVerificationData(data);
+        return JSON.parse(stored);
       }
     } catch (error) {
       console.error('Error reading verification data:', error);
       sessionStorage.removeItem(STORAGE_KEY);
     }
-  }, []);
+    return null;
+  });
 
   const setVerified = (data: VerificationData) => {
     try {
