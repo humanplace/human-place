@@ -3,7 +3,6 @@ import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE } from '@/context/CanvasContext';
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
-import { ColorCode } from '@/context/canvasTypes';
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
