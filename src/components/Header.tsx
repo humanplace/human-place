@@ -168,7 +168,7 @@ const Header = () => {
   };
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 bg-white border-b shadow-sm">
+    <header className="h-14 flex items-center justify-between px-4 bg-white shadow-sm">
       <button 
         onClick={handleRefresh} 
         className="p-2"

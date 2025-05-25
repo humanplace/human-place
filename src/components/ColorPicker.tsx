@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useCanvas, COLORS, COLOR_NAME_MAP } from '@/context/CanvasContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -40,7 +39,7 @@ const ColorPicker = () => {
   };
 
   return (
-    <footer className="h-20 bg-white border-t shadow-sm py-3 px-2">
+    <footer className="h-20 bg-white shadow-sm py-3 px-2">
       <div className="flex justify-center items-center h-full">
         <div className={`flex ${isMobile ? 'space-x-1' : 'space-x-2'} px-2 md:px-5`}>
           {COLORS.map((color) => (
