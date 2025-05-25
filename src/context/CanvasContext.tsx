@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
 import { fetchAllCanvasPixels } from './canvasUtils';
@@ -20,7 +20,7 @@ const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
 // Helper to initialize state from sessionStorage before first render
-function initCanvasState(): CanvasState {
+function getInitialCanvasState(): { state: CanvasState; hasCache: boolean } {
   try {
     const cached = sessionStorage.getItem(CANVAS_CACHE_KEY);
     if (cached) {
@@ -39,99 +39,67 @@ function initCanvasState(): CanvasState {
             loadedPixels[pixel.y][pixel.x] = pixel.color;
           }
         });
-        return { ...initialState, pixels: loadedPixels, isLoading: false };
+        return { state: { ...initialState, pixels: loadedPixels, isLoading: false }, hasCache: true };
       }
     }
   } catch (error) {
     console.error('Error parsing cached canvas data:', error);
     sessionStorage.removeItem(CANVAS_CACHE_KEY);
   }
-  return initialState;
+  return { state: initialState, hasCache: false };
 }
 
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(canvasReducer, initialState, initCanvasState);
+  // Determine initial state and whether cached data was used
+  const initRef = useRef(getInitialCanvasState());
+  const [state, dispatch] = useReducer(canvasReducer, initRef.current.state);
+  const hasCache = initRef.current.hasCache;
   
-  // Load canvas data from cache or Supabase on mount
+  // Fetch canvas data from Supabase if no cache was loaded
   useEffect(() => {
+    if (hasCache) return;
+
     const loadCanvasData = async () => {
       try {
-        const cachedData = sessionStorage.getItem(CANVAS_CACHE_KEY);
-        let parsed: { x: number; y: number; color: ColorCode }[] | null = null;
-        if (cachedData) {
-          try {
-            parsed = JSON.parse(cachedData);
-          } catch (error) {
-            console.error('Error parsing cached data:', error);
-            sessionStorage.removeItem(CANVAS_CACHE_KEY);
-          }
+        dispatch({ type: 'SET_LOADING', isLoading: true });
+
+        const data = await fetchAllCanvasPixels();
+
+        if (import.meta.env.DEV) {
+          console.log(`Successfully fetched ${data.length} pixels from Supabase`);
         }
 
-        if (!parsed || parsed.length === 0) {
-          dispatch({ type: 'SET_LOADING', isLoading: true });
+        try {
+          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
+        } catch (error) {
+          console.error('Error caching canvas data:', error);
         }
 
-        if (parsed && parsed.length > 0 && !state.pixels) {
-          if (import.meta.env.DEV) {
-            console.log(`Using cached canvas data (${parsed.length} pixels)`);
-          }
+        if (data && data.length > 0) {
+          const loadedPixels = Array(CANVAS_SIZE)
+            .fill(null)
+            .map(() => Array(CANVAS_SIZE));
 
-        const loadedPixels = Array(CANVAS_SIZE)
-          .fill(null)
-          .map(() => Array(CANVAS_SIZE));
-        parsed.forEach((pixel) => {
-          if (
-            pixel.x >= 0 &&
-            pixel.x < CANVAS_SIZE &&
-            pixel.y >= 0 &&
-            pixel.y < CANVAS_SIZE
-          ) {
-            loadedPixels[pixel.y][pixel.x] = pixel.color;
-          }
-        });
+          data.forEach((pixel: { x: number; y: number; color: ColorCode }) => {
+            if (
+              pixel.x >= 0 &&
+              pixel.x < CANVAS_SIZE &&
+              pixel.y >= 0 &&
+              pixel.y < CANVAS_SIZE
+            ) {
+              loadedPixels[pixel.y][pixel.x] = pixel.color;
+            }
+          });
 
           dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-        }
-
-        if (!parsed || parsed.length === 0) {
-          const data = await fetchAllCanvasPixels();
-
-          if (import.meta.env.DEV) {
-            console.log(`Successfully fetched ${data.length} pixels from Supabase`);
-          }
-
-          try {
-            sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
-          } catch (error) {
-            console.error('Error caching canvas data:', error);
-          }
-
-          if (data && data.length > 0) {
-            const loadedPixels = Array(CANVAS_SIZE)
-              .fill(null)
-              .map(() => Array(CANVAS_SIZE));
-
-            data.forEach((pixel: { x: number; y: number; color: ColorCode }) => {
-              if (
-                pixel.x >= 0 &&
-                pixel.x < CANVAS_SIZE &&
-                pixel.y >= 0 &&
-                pixel.y < CANVAS_SIZE
-              ) {
-                loadedPixels[pixel.y][pixel.x] = pixel.color;
-              }
-            });
-
-            dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-          } else {
-            toast({
-              title: 'Canvas data missing',
-              description: 'No pixel data found on the server.',
-              variant: 'destructive',
-            });
-            dispatch({ type: 'SET_LOADING', isLoading: false });
-          }
+        } else {
+          toast({
+            title: 'Canvas data missing',
+            description: 'No pixel data found on the server.',
+            variant: 'destructive',
+          });
+          dispatch({ type: 'SET_LOADING', isLoading: false });
         }
       } catch (error) {
         console.error('Failed to load canvas data:', error);
@@ -144,10 +112,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         });
       }
     };
-    
+
     loadCanvasData();
-    
-  }, []);
+  }, [hasCache]);
   
   return (
     <CanvasContext.Provider value={{ state, dispatch }}>
