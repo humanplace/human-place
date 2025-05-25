@@ -27,11 +27,10 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadCanvasData = async () => {
       try {
-        // Set loading state to true
-        dispatch({ type: 'SET_LOADING', isLoading: true });
-        
-        // Check for cached data first
+        // Check for cached data first before setting any loading state
         const cachedData = sessionStorage.getItem(CANVAS_CACHE_KEY);
+        let hasCachedData = false;
+        
         if (cachedData) {
           try {
             const data = JSON.parse(cachedData);
@@ -41,7 +40,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
                 console.log(`Using cached canvas data (${data.length} pixels)`);
               }
               
-              // Use cached data
+              // Use cached data and initialize canvas immediately
               const loadedPixels = Array(CANVAS_SIZE).fill(null).map(() => Array(CANVAS_SIZE));
               data.forEach((pixel: any) => {
                 if (pixel.x >= 0 && pixel.x < CANVAS_SIZE && pixel.y >= 0 && pixel.y < CANVAS_SIZE) {
@@ -50,12 +49,18 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
               });
               
               dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
-              return;
+              hasCachedData = true;
+              return; // Exit early, no need for network request
             }
           } catch (error) {
             console.error('Error parsing cached data:', error);
             sessionStorage.removeItem(CANVAS_CACHE_KEY);
           }
+        }
+        
+        // Only set loading state to true if we don't have cached data and need to fetch from network
+        if (!hasCachedData) {
+          dispatch({ type: 'SET_LOADING', isLoading: true });
         }
         
         // No valid cache, fetch from Supabase
