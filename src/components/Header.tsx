@@ -62,6 +62,7 @@ const Header = () => {
   };
 
   const handleCommitPixel = () => {
+    haptics.buttonPress();
     dispatch({ type: 'COMMIT_PENDING_PIXEL' });
     
     // Add toast notification when pixel is successfully placed
@@ -71,6 +72,7 @@ const Header = () => {
   };
 
   const handleRefresh = async () => {
+    haptics.buttonPress();
     try {
       // Set loading state
       dispatch({ type: 'SET_LOADING', isLoading: true });
