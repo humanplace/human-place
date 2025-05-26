@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -75,5 +74,38 @@
     position: absolute;
     top: 100%;
     left: 0;
+  }
+}
+
+/* Color Picker Grid Styles */
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.color-picker-grid.mobile {
+  gap: 0.25rem; /* 4px */
+  max-width: 100%;
+}
+
+.color-picker-grid.desktop {
+  gap: 0.5rem; /* 8px */
+  max-width: 28rem; /* Constrains on larger screens */
+}
+
+.color-picker-button {
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: 20px; /* Lowered from 24px for small screens */
+  max-width: 40px;
+  margin: 0 auto; /* Centers button in grid cell if max-width is reached */
+}
+
+/* Ensure buttons don't get too large on tablets/desktop */
+@media (min-width: 768px) {
+  .color-picker-grid {
+    padding: 0 2.5rem; /* 40px desktop padding */
   }
 }
