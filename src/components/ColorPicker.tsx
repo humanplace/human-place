@@ -23,7 +23,7 @@ const ColorPicker = () => {
               className={`
                 color-picker-button
                 rounded-full flex-shrink-0 transition-all
-                ${state.selectedColor === color ? 'ring-2 ring-black ring-offset-2' : ''}
+                ${state.selectedColor === color ? 'ring-2 ring-black' : ''}
                 ${color === 1 ? 'border border-gray-300' : ''}
                 shadow-sm
               `}
