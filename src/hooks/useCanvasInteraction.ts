@@ -40,7 +40,6 @@ export const useCanvasInteraction = () => {
     
     // Check if the coordinates are within canvas bounds
     if (gridX >= 0 && gridX < CANVAS_SIZE && gridY >= 0 && gridY < CANVAS_SIZE) {
-      haptics.pixelPreview();
       dispatch({ 
         type: 'SET_PENDING_PIXEL',
         x: gridX,
@@ -113,6 +112,8 @@ export const useCanvasInteraction = () => {
   const handleTouchEnd = (e: React.TouchEvent, canvasRect: DOMRect) => {
     // If it was a tap (minimal movement), place a pixel using the last touch position
     if (touchInfo.current.isTap) {
+      // Add haptic feedback only for touch events
+      haptics.pixelPreview();
       handleCanvasClick(
         touchInfo.current.lastTouchX,
         touchInfo.current.lastTouchY,
