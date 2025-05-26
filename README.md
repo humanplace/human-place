@@ -72,3 +72,13 @@ To verify that slow dragging on touch devices doesn't place a pixel:
 4. Repeat with two fingers to confirm multi-touch gestures are ignored and
    do not place pixels.
 
+## Troubleshooting custom color shadow
+
+If the drop shadow on the selected color swatch isn't visible:
+
+1. Run `npm run build` to generate the compiled CSS.
+2. Inspect the built CSS in `dist/assets` and confirm it includes a rule for
+   `shadow-[0_4px_12px_rgba(0,0,0,0.25)]`.
+3. Ensure the layout container isn't using `overflow-hidden` so the shadow can
+   render outside the footer.
+
