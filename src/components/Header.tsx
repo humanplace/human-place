@@ -3,6 +3,7 @@ import { useCanvas, ZOOM_LEVELS, CANVAS_SIZE, type ColorCode } from '@/context/C
 import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
+import { haptics } from '@/utils/haptics';
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
@@ -48,12 +49,14 @@ const Header = () => {
 
   const handleZoomIn = () => {
     if (currentZoomIndex < ZOOM_LEVELS.length - 1) {
+      haptics.buttonPress();
       dispatch({ type: 'SET_ZOOM', level: ZOOM_LEVELS[currentZoomIndex + 1] });
     }
   };
 
   const handleZoomOut = () => {
     if (currentZoomIndex > 0) {
+      haptics.buttonPress();
       dispatch({ type: 'SET_ZOOM', level: ZOOM_LEVELS[currentZoomIndex - 1] });
     }
   };

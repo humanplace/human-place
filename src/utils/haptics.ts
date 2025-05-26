@@ -16,5 +16,13 @@ export const haptics = {
     });
   },
   
+  // Button press feedback (light touch)
+  buttonPress: () => {
+    MiniKit.commands.sendHapticFeedback({
+      hapticsType: 'impact',
+      style: 'light'
+    });
+  },
+  
   // Ready to add more methods later...
 }; 
