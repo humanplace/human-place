@@ -8,5 +8,13 @@ export const haptics = {
     });
   },
   
+  // Pixel preview feedback (light touch)
+  pixelPreview: () => {
+    MiniKit.commands.sendHapticFeedback({
+      hapticsType: 'impact',
+      style: 'light'
+    });
+  },
+  
   // Ready to add more methods later...
 }; 

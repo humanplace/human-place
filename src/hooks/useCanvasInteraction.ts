@@ -1,7 +1,7 @@
-
 import * as React from 'react';
 import { useCanvas, CANVAS_SIZE } from '@/context/CanvasContext';
 import { screenToGrid } from '@/utils/canvasUtils';
+import { haptics } from '@/utils/haptics';
 
 export const useCanvasInteraction = () => {
   const { state, dispatch } = useCanvas();
@@ -40,6 +40,7 @@ export const useCanvasInteraction = () => {
     
     // Check if the coordinates are within canvas bounds
     if (gridX >= 0 && gridX < CANVAS_SIZE && gridY >= 0 && gridY < CANVAS_SIZE) {
+      haptics.pixelPreview();
       dispatch({ 
         type: 'SET_PENDING_PIXEL',
         x: gridX,
