@@ -23,8 +23,9 @@ const ColorPicker = () => {
               className={`
                 color-picker-button
                 rounded-full flex-shrink-0 transition-all
-                ${state.selectedColor === color ? 'ring-2 ring-black shadow-[0_4px_12px_rgba(0,0,0,0.25)]' : 'shadow-sm'}
+                ${state.selectedColor === color ? 'ring-2 ring-black' : ''}
                 ${color === 1 ? 'border border-gray-300' : ''}
+                shadow-sm
               `}
               style={{
                 backgroundColor: getColorHex(color),
