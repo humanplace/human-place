@@ -3,12 +3,14 @@ import { useCanvas, COLORS, COLOR_NAME_MAP } from '@/context/CanvasContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ColorCode } from '@/context/canvasTypes';
 import { getColorHex } from '@/utils/canvasUtils';
+import { haptics } from '@/utils/haptics';
 
 const ColorPicker = () => {
   const { state, dispatch } = useCanvas();
   const isMobile = useIsMobile();
 
   const handleSelectColor = (color: ColorCode) => {
+    haptics.colorSelect();
     dispatch({ type: 'SELECT_COLOR', color });
   };
 
