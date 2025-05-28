@@ -4,7 +4,7 @@ export const haptics = {
   // Color selection feedback
   colorSelect: () => {
     MiniKit.commands.sendHapticFeedback({
-      hapticsType: 'selectionChanged'
+      hapticsType: 'selection-changed'
     });
   },
   

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useRef } from 
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
 import { fetchAllCanvasPixels } from './canvasUtils';
-import { CanvasState, CanvasAction, CANVAS_SIZE } from './canvasTypes';
+import { CanvasState, CanvasAction, CANVAS_SIZE, ColorCode } from './canvasTypes';
 
 // Export necessary types and constants from the types file
 export { CANVAS_SIZE, MAX_ZOOM_LEVEL, MIN_ZOOM_LEVEL, ZOOM_LEVELS, COLORS, COLOR_NAME_MAP } from './canvasTypes';
