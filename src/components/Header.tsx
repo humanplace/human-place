@@ -69,34 +69,10 @@ const Header = () => {
     if (!state.pendingPixel) return;
     
     try {
-      // 1. Initialize payment
-      const initiateResponse = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/initiate-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ'
-        },
-        body: JSON.stringify({
-          pixel_x: state.pendingPixel.x,
-          pixel_y: state.pendingPixel.y,
-          pixel_color: state.pendingPixel.color,
-          user_nullifier_hash: verificationData?.nullifierHash
-        })
-      });
+      // Generate reference ID locally (UUID without dashes)
+      const reference_id = crypto.randomUUID().replace(/-/g, '');
       
-      const { success, reference_id, error } = await initiateResponse.json();
-      
-      if (!success) {
-        toast({
-          title: "Failed to initialize payment",
-          description: error || "Please try again",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // 2. Execute Pay command
+      // Execute Pay command directly without calling initiate-payment
       const paymentPayload: PayCommandInput = {
         reference: reference_id,
         to: PAYMENT_ADDRESS,
@@ -123,7 +99,7 @@ const Header = () => {
         return;
       }
       
-      // 3. Verify payment with backend
+      // Verify payment with backend, including pixel data
       const verifyResponse = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-payment', {
         method: 'POST',
         headers: {
@@ -133,7 +109,11 @@ const Header = () => {
         },
         body: JSON.stringify({
           reference_id,
-          transaction_id: (finalPayload as MiniAppPaymentSuccessPayload).transaction_id
+          transaction_id: (finalPayload as MiniAppPaymentSuccessPayload).transaction_id,
+          pixel_x: state.pendingPixel.x,
+          pixel_y: state.pendingPixel.y,
+          pixel_color: state.pendingPixel.color,
+          user_nullifier_hash: verificationData?.nullifierHash
         })
       });
       

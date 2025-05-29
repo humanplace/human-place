@@ -12,6 +12,10 @@ const PAYMENT_ADDRESS = '0xfe9eea1447587de22651b390efd4ba9ba1a5e344'
 interface RequestPayload {
   reference_id: string
   transaction_id: string
+  pixel_x: number
+  pixel_y: number
+  pixel_color: number
+  user_nullifier_hash?: string
 }
 
 serve(async (req) => {
@@ -21,57 +25,63 @@ serve(async (req) => {
   }
 
   try {
-    const { reference_id, transaction_id }: RequestPayload = await req.json()
+    const { reference_id, transaction_id, pixel_x, pixel_y, pixel_color, user_nullifier_hash }: RequestPayload = await req.json()
+    
+    // Validate pixel coordinates
+    if (pixel_x < 0 || pixel_x >= 100 || pixel_y < 0 || pixel_y >= 100) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid pixel coordinates' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Validate color
+    if (pixel_color < 0 || pixel_color > 10) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid color value' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
     
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get payment record
-    const { data: payment, error: paymentError } = await supabase
+    // Check if payment already exists (idempotency)
+    const { data: existingPayment } = await supabase
       .from('payments')
       .select('*')
       .eq('reference_id', reference_id)
       .single()
 
-    if (paymentError || !payment) {
-      console.error('Payment not found:', paymentError)
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Payment record not found' 
-        }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+    if (existingPayment) {
+      // Payment already processed
+      if (existingPayment.status === 'completed') {
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'Payment already processed' 
+          }),
+          { 
+            status: 200, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
     }
-
-    // Check if payment is already processed
-    if (payment.status === 'completed') {
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          message: 'Payment already processed' 
-        }),
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Update payment status to verifying
-    await supabase
-      .from('payments')
-      .update({ 
-        status: 'verifying',
-        transaction_id,
-        updated_at: new Date().toISOString()
-      })
-      .eq('reference_id', reference_id)
 
     // Get environment variables
     const APP_ID = Deno.env.get('WORLD_APP_ID')
@@ -104,14 +114,6 @@ serve(async (req) => {
 
     if (!verifyResponse.ok) {
       console.error('Failed to verify transaction:', verifyResponse.status)
-      await supabase
-        .from('payments')
-        .update({ 
-          status: 'failed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('reference_id', reference_id)
-
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -128,13 +130,35 @@ serve(async (req) => {
 
     // Optimistic acceptance - accept if not failed
     if (transaction.reference === reference_id && transaction.status !== 'failed') {
+      // Create or update payment record
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .upsert({
+          reference_id,
+          transaction_id,
+          pixel_x,
+          pixel_y,
+          pixel_color,
+          user_nullifier_hash,
+          status: 'completed',
+          amount: 0.1,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'reference_id'
+        })
+
+      if (paymentError) {
+        console.error('Failed to save payment record:', paymentError)
+        // Continue anyway - payment was verified
+      }
+
       // Update pixel in canvas table
       const { error: pixelError } = await supabase
         .from('canvas')
         .upsert({
-          x: payment.pixel_x,
-          y: payment.pixel_y,
-          color: payment.pixel_color
+          x: pixel_x,
+          y: pixel_y,
+          color: pixel_color
         }, {
           onConflict: 'x,y'
         })
@@ -144,23 +168,14 @@ serve(async (req) => {
         // Don't fail the payment, log for investigation
       }
 
-      // Mark payment as completed
-      await supabase
-        .from('payments')
-        .update({ 
-          status: 'completed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('reference_id', reference_id)
-
       return new Response(
         JSON.stringify({ 
           success: true,
           message: 'Payment verified and pixel updated',
           pixel: {
-            x: payment.pixel_x,
-            y: payment.pixel_y,
-            color: payment.pixel_color
+            x: pixel_x,
+            y: pixel_y,
+            color: pixel_color
           }
         }),
         { 
@@ -169,14 +184,19 @@ serve(async (req) => {
         }
       )
     } else {
-      // Payment failed
+      // Payment failed - create failed record for audit
       await supabase
         .from('payments')
-        .update({ 
+        .insert({
+          reference_id,
+          transaction_id,
+          pixel_x,
+          pixel_y,
+          pixel_color,
+          user_nullifier_hash,
           status: 'failed',
-          updated_at: new Date().toISOString()
+          amount: 0.1
         })
-        .eq('reference_id', reference_id)
 
       return new Response(
         JSON.stringify({ 
