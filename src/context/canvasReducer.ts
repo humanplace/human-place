@@ -49,8 +49,8 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
       const updatedPixels = [...state.pixels];
       updatedPixels[y] = newRow;
 
-      // Save to Supabase (async, won't block UI)
-      updatePixelInSupabase(x, y, color);
+      // Note: Pixel is now saved to Supabase through the payment flow
+      // The verify-payment Edge Function handles the database update
 
       return {
         ...state,

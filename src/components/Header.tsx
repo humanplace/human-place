@@ -4,11 +4,15 @@ import { RefreshCw, Send, ZoomIn, ZoomOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { fetchAllCanvasPixels, fetchUpdatedCanvasPixels, lastUpdateTimestamp } from '@/context/canvasUtils';
 import { haptics } from '@/utils/haptics';
+import { MiniKit, PayCommandInput, Tokens, tokenToDecimals, type MiniAppPaymentSuccessPayload } from '@worldcoin/minikit-js';
+import { useVerification } from '@/context/VerificationContext';
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
+const PAYMENT_ADDRESS = '0xfe9eea1447587de22651b390efd4ba9ba1a5e344';
 
 const Header = () => {
   const { state, dispatch } = useCanvas();
+  const { verificationData } = useVerification();
   
   // Find the current zoom index and calculate next/previous
   const currentZoomIndex = ZOOM_LEVELS.findIndex(zoom => zoom === state.zoom);
@@ -61,14 +65,103 @@ const Header = () => {
     }
   };
 
-  const handleCommitPixel = () => {
-    haptics.buttonPress();
-    dispatch({ type: 'COMMIT_PENDING_PIXEL' });
+  const handleCommitPixel = async () => {
+    if (!state.pendingPixel) return;
     
-    // Add toast notification when pixel is successfully placed
-    toast({
-      title: "🎨 Pixel Placed!",
-    });
+    try {
+      // 1. Initialize payment
+      const initiateResponse = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/initiate-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ'
+        },
+        body: JSON.stringify({
+          pixel_x: state.pendingPixel.x,
+          pixel_y: state.pendingPixel.y,
+          pixel_color: state.pendingPixel.color,
+          user_nullifier_hash: verificationData?.nullifierHash
+        })
+      });
+      
+      const { success, reference_id, error } = await initiateResponse.json();
+      
+      if (!success) {
+        toast({
+          title: "Failed to initialize payment",
+          description: error || "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // 2. Execute Pay command
+      const paymentPayload: PayCommandInput = {
+        reference: reference_id,
+        to: PAYMENT_ADDRESS,
+        tokens: [{
+          symbol: Tokens.WLD,
+          token_amount: tokenToDecimals(0.1, Tokens.WLD).toString()
+        }],
+        description: `Pixel at (${state.pendingPixel.x}, ${state.pendingPixel.y})`
+      };
+      
+      if (!MiniKit.isInstalled()) {
+        toast({
+          title: "World App required",
+          description: "Please open this app in World App",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const { finalPayload } = await MiniKit.commandsAsync.pay(paymentPayload);
+      
+      if (finalPayload.status !== 'success') {
+        // User cancelled or payment failed - just return silently
+        return;
+      }
+      
+      // 3. Verify payment with backend
+      const verifyResponse = await fetch('https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/verify-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ'
+        },
+        body: JSON.stringify({
+          reference_id,
+          transaction_id: (finalPayload as MiniAppPaymentSuccessPayload).transaction_id
+        })
+      });
+      
+      const verifyResult = await verifyResponse.json();
+      
+      if (verifyResult.success) {
+        // Payment verified! Commit the pixel locally and clear pending
+        dispatch({ type: 'COMMIT_PENDING_PIXEL' });
+        
+        toast({
+          title: "🎨 Pixel Placed!",
+        });
+      } else {
+        toast({
+          title: "Payment verification failed",
+          description: "Please try again or contact support",
+          variant: "destructive"
+        });
+      }
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment failed",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRefresh = async () => {
