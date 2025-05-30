@@ -78,16 +78,20 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
       return { ...state, selectedColor: action.color };
       
     case 'INITIALIZE_CANVAS': {
-      // Validate that we have a fully populated canvas
+      // Validate that the pixels array is properly formatted (fully populated 100x100)
       if (!action.pixels || action.pixels.length !== CANVAS_SIZE) {
-        console.error('Invalid canvas data: expected full canvas');
+        if (import.meta.env.DEV) {
+          console.error('Invalid canvas data: expected full canvas');
+        }
         return state;
       }
       
-      // Ensure each row is fully populated
+      // Additional validation for array structure
       for (let i = 0; i < CANVAS_SIZE; i++) {
         if (!action.pixels[i] || action.pixels[i].length !== CANVAS_SIZE) {
-          console.error(`Invalid canvas data: row ${i} is not fully populated`);
+          if (import.meta.env.DEV) {
+            console.error(`Invalid canvas data: row ${i} is not fully populated`);
+          }
           return state;
         }
       }

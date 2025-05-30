@@ -25,7 +25,9 @@ const Header = () => {
         console.log(`Cache updated with ${pixelData.length} pixels`);
       }
     } catch (error) {
-      console.error('Error updating cache:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error updating cache:', error);
+      }
     }
   };
 
@@ -135,7 +137,9 @@ const Header = () => {
       }
       
     } catch (error) {
-      console.error('Payment error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Payment error:', error);
+      }
       toast({
         title: "Payment failed",
         description: "Please try again",
@@ -231,7 +235,9 @@ const Header = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to reload canvas:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to reload canvas:', error);
+      }
       
       // Set loading to false on error
       dispatch({ type: 'SET_LOADING', isLoading: false });

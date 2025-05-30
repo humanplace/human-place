@@ -73,7 +73,9 @@ const LandingPage = () => {
         navigate('/canvas');
       } else {
         // Backend verification failed - this is a real error worth showing
-        console.error('Backend verification failed:', result_backend);
+        if (import.meta.env.DEV) {
+          console.error('Backend verification failed:', result_backend);
+        }
         toast({
           title: "Verification Failed",
           description: result_backend.error || "Unable to verify your identity. Please try again.",
@@ -82,7 +84,9 @@ const LandingPage = () => {
       }
     } catch (error) {
       // Handle exceptions (network issues, etc.)
-      console.error('Verification error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Verification error:', error);
+      }
     } finally {
       // Always reset isVerifying to ensure button is clickable again
       setIsVerifying(false);

@@ -31,13 +31,6 @@ export const useCanvasInteraction = () => {
     const canvasX = clientX - canvasRect.left;
     const canvasY = clientY - canvasRect.top;
     
-    if (import.meta.env.DEV) {
-      console.log('Click registered at:', gridX, gridY);
-      console.log('Position:', state.position);
-      console.log('Canvas dimensions:', canvasRect.width, canvasRect.height);
-      console.log('Click at canvas coordinates:', canvasX, canvasY);
-    }
-    
     // Check if the coordinates are within canvas bounds
     if (gridX >= 0 && gridX < CANVAS_SIZE && gridY >= 0 && gridY < CANVAS_SIZE) {
       dispatch({ 

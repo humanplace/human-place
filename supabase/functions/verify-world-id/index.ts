@@ -25,9 +25,11 @@ serve(async (req) => {
     const app_id = Deno.env.get('WORLD_APP_ID') as `app_${string}`
     const expected_action = Deno.env.get('WORLD_ACTION_ID')
     
-    // Validate configuration
+    // Check if required environment variables are set
     if (!app_id) {
-      console.error('WORLD_APP_ID not configured')
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error('WORLD_APP_ID not configured')
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -41,7 +43,9 @@ serve(async (req) => {
     }
 
     if (!expected_action) {
-      console.error('WORLD_ACTION_ID not configured')
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error('WORLD_ACTION_ID not configured')
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -56,7 +60,9 @@ serve(async (req) => {
 
     // Validate action matches expected value
     if (action !== expected_action) {
-      console.error(`Action mismatch: received "${action}", expected "${expected_action}"`)
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error(`Action mismatch: received "${action}", expected "${expected_action}"`)
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -86,7 +92,9 @@ serve(async (req) => {
       )
     } else {
       // Log technical details but return user-friendly message
-      console.error('World ID verification failed:', verifyRes)
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error('World ID verification failed:', verifyRes)
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -99,7 +107,9 @@ serve(async (req) => {
       )
     }
   } catch (error) {
-    console.error('Verification error:', error)
+    if (Deno.env.get('ENVIRONMENT') !== 'production') {
+      console.error('Verification error:', error)
+    }
     return new Response(
       JSON.stringify({ 
         success: false, 

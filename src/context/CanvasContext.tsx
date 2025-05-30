@@ -46,7 +46,9 @@ function getInitialCanvasState(): { state: CanvasState; hasCache: boolean } {
       }
     }
   } catch (error) {
-    console.error('Error parsing cached canvas data:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error parsing cached canvas data:', error);
+    }
     sessionStorage.removeItem(CANVAS_CACHE_KEY);
   }
   return { state: initialState, hasCache: false };
@@ -75,7 +77,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
         // Validate we have a fully populated canvas
         if (data.length !== CANVAS_SIZE * CANVAS_SIZE) {
-          console.error(`Expected ${CANVAS_SIZE * CANVAS_SIZE} pixels, but got ${data.length}`);
+          if (import.meta.env.DEV) {
+            console.error(`Expected ${CANVAS_SIZE * CANVAS_SIZE} pixels, but got ${data.length}`);
+          }
           toast({
             title: 'Incomplete canvas data',
             description: 'The canvas data appears to be incomplete.',
@@ -88,7 +92,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         try {
           sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
         } catch (error) {
-          console.error('Error caching canvas data:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error caching canvas data:', error);
+          }
         }
 
         // Initialize fully populated canvas
@@ -110,7 +116,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
         dispatch({ type: 'INITIALIZE_CANVAS', pixels: loadedPixels });
       } catch (error) {
-        console.error('Failed to load canvas data:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to load canvas data:', error);
+        }
 
         dispatch({ type: 'SET_LOADING', isLoading: false });
         toast({

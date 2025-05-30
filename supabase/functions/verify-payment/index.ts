@@ -88,7 +88,9 @@ serve(async (req) => {
     const DEV_PORTAL_API_KEY = Deno.env.get('DEV_PORTAL_API_KEY')
 
     if (!APP_ID || !DEV_PORTAL_API_KEY) {
-      console.error('Missing environment variables')
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error('Missing environment variables')
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -113,7 +115,9 @@ serve(async (req) => {
     )
 
     if (!verifyResponse.ok) {
-      console.error('Failed to verify transaction:', verifyResponse.status)
+      if (Deno.env.get('ENVIRONMENT') !== 'production') {
+        console.error('Failed to verify transaction:', verifyResponse.status)
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -148,7 +152,9 @@ serve(async (req) => {
         })
 
       if (paymentError) {
-        console.error('Failed to save payment record:', paymentError)
+        if (Deno.env.get('ENVIRONMENT') !== 'production') {
+          console.error('Failed to save payment record:', paymentError)
+        }
         // Continue anyway - payment was verified
       }
 
@@ -164,7 +170,9 @@ serve(async (req) => {
         })
 
       if (pixelError) {
-        console.error('Failed to update pixel:', pixelError)
+        if (Deno.env.get('ENVIRONMENT') !== 'production') {
+          console.error('Failed to update pixel:', pixelError)
+        }
         // Don't fail the payment, log for investigation
       }
 
@@ -210,7 +218,9 @@ serve(async (req) => {
       )
     }
   } catch (error) {
-    console.error('Payment verification error:', error)
+    if (Deno.env.get('ENVIRONMENT') !== 'production') {
+      console.error('Payment verification error:', error)
+    }
     return new Response(
       JSON.stringify({ 
         success: false, 

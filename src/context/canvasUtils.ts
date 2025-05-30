@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ColorCode } from './canvasTypes';
@@ -25,16 +24,16 @@ export async function updatePixelInSupabase(x: number, y: number, color: ColorCo
       );
     
     if (error) {
-      console.error('Failed to save pixel to Supabase:', error);
-      throw error;
+      if (import.meta.env.DEV) {
+        console.error('Failed to save pixel to Supabase:', error);
+      }
+      throw new Error('Failed to save pixel');
     }
   } catch (error) {
-    console.error('Error saving pixel to Supabase:', error);
-    toast({
-      title: "Failed to save pixel",
-      description: "Your pixel couldn't be saved to the server.",
-      variant: "destructive",
-    });
+    if (import.meta.env.DEV) {
+      console.error('Error saving pixel to Supabase:', error);
+    }
+    throw error;
   }
 }
 
@@ -85,7 +84,9 @@ export async function fetchAllCanvasPixels() {
     
     return pixels;
   } catch (error) {
-    console.error('Error fetching all canvas pixels:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching all canvas pixels:', error);
+    }
     throw error;
   }
 }
@@ -140,7 +141,9 @@ export async function fetchUpdatedCanvasPixels(since: string) {
     
     return pixels;
   } catch (error) {
-    console.error('Error fetching updated canvas pixels:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching updated canvas pixels:', error);
+    }
     throw error;
   }
 }

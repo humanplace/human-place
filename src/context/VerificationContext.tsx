@@ -22,13 +22,14 @@ const STORAGE_KEY = 'worldIdVerified';
 export function VerificationProvider({ children }: { children: React.ReactNode }) {
   const [verificationData, setVerificationData] = useState<VerificationData | null>(() => {
     try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
+      const storedData = sessionStorage.getItem(STORAGE_KEY);
+      if (storedData) {
+        return JSON.parse(storedData);
       }
     } catch (error) {
-      console.error('Error reading verification data:', error);
-      sessionStorage.removeItem(STORAGE_KEY);
+      if (import.meta.env.DEV) {
+        console.error('Error reading verification data:', error);
+      }
     }
     return null;
   });
@@ -38,7 +39,9 @@ export function VerificationProvider({ children }: { children: React.ReactNode }
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       setVerificationData(data);
     } catch (error) {
-      console.error('Error storing verification data:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error storing verification data:', error);
+      }
     }
   };
 
@@ -46,6 +49,19 @@ export function VerificationProvider({ children }: { children: React.ReactNode }
     sessionStorage.removeItem(STORAGE_KEY);
     setVerificationData(null);
   };
+
+  // Store verification data
+  React.useEffect(() => {
+    try {
+      if (verificationData) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(verificationData));
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error storing verification data:', error);
+      }
+    }
+  }, [verificationData]);
 
   return (
     <VerificationContext.Provider 
