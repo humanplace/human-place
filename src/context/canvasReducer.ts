@@ -78,7 +78,7 @@ export function canvasReducer(state: CanvasState, action: CanvasAction): CanvasS
       return { ...state, selectedColor: action.color };
       
     case 'INITIALIZE_CANVAS': {
-      // Validate that the pixels array is properly formatted (fully populated 100x100)
+      // Validate that the pixels array is properly formatted (fully populated 300x300)
       if (!action.pixels || action.pixels.length !== CANVAS_SIZE) {
         if (import.meta.env.DEV) {
           console.error('Invalid canvas data: expected full canvas');

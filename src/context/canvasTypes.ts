@@ -1,5 +1,5 @@
 // Canvas dimensions and constants
-export const CANVAS_SIZE = 100;
+export const CANVAS_SIZE = 300;
 export const MAX_ZOOM_LEVEL = 64;
 export const MIN_ZOOM_LEVEL = 1;
 export const ZOOM_LEVELS = [1, 2, 4, 8, 16, 32, 64];
@@ -44,5 +44,5 @@ export type CanvasAction =
   | { type: 'SET_POSITION'; x: number; y: number }
   | { type: 'SET_ZOOM'; level: number }
   | { type: 'SELECT_COLOR'; color: ColorCode }
-  | { type: 'INITIALIZE_CANVAS'; pixels: ColorCode[][] }  // Fully populated 100x100 array
+  | { type: 'INITIALIZE_CANVAS'; pixels: ColorCode[][] }  // Fully populated 300x300 array
   | { type: 'SET_LOADING'; isLoading: boolean };

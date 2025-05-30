@@ -28,7 +28,7 @@ serve(async (req) => {
     const { reference_id, transaction_id, pixel_x, pixel_y, pixel_color, user_nullifier_hash }: RequestPayload = await req.json()
     
     // Validate pixel coordinates
-    if (pixel_x < 0 || pixel_x >= 100 || pixel_y < 0 || pixel_y >= 100) {
+    if (pixel_x < 0 || pixel_x >= 300 || pixel_y < 0 || pixel_y >= 300) {
       return new Response(
         JSON.stringify({ 
           success: false, 
