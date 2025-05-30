@@ -30,6 +30,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          pixel_color: number
+          pixel_x: number
+          pixel_y: number
+          reference_id: string
+          status: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_nullifier_hash: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          pixel_color: number
+          pixel_x: number
+          pixel_y: number
+          reference_id: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_nullifier_hash?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          pixel_color?: number
+          pixel_x?: number
+          pixel_y?: number
+          reference_id?: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_nullifier_hash?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
