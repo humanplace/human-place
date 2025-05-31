@@ -41,7 +41,7 @@ export async function updatePixelInSupabase(x: number, y: number, color: ColorCo
 export async function fetchAllCanvasPixels() {
   const pixels: { x: number, y: number, color: ColorCode, updated_at: string }[] = [];
   let page = 0;
-  const pageSize = 5000; // Increased from 1000 to reduce API calls
+  const pageSize = 10000; // Updated to match Supabase max rows setting
   let hasMoreData = true;
 
   try {
@@ -95,7 +95,7 @@ export async function fetchAllCanvasPixels() {
 export async function fetchUpdatedCanvasPixels(since: string) {
   const pixels: { x: number, y: number, color: ColorCode, updated_at: string }[] = [];
   let page = 0;
-  const pageSize = 5000; // Increased from 1000 to reduce API calls
+  const pageSize = 10000; // Updated to match Supabase max rows setting
   let hasMoreData = true;
 
   try {
