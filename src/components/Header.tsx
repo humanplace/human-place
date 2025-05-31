@@ -125,6 +125,13 @@ const Header = () => {
         // Payment verified! Commit the pixel locally and clear pending
         dispatch({ type: 'COMMIT_PENDING_PIXEL' });
         
+        // Update the cache to reflect the new pixel
+        // Use setTimeout to ensure state has been updated first
+        setTimeout(() => {
+          const cacheData = convertStateToCache();
+          updateCache(cacheData);
+        }, 0);
+        
         toast({
           title: "🎨 Pixel Placed!",
         });
