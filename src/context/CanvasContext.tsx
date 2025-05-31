@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
 import { fetchAllCanvasPixels, fetchBinaryCanvasData } from './canvasUtils';
@@ -18,53 +18,19 @@ const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 
 const CANVAS_CACHE_KEY = 'canvas-data-cache';
 
-// Helper to initialize state from sessionStorage before first render
-function getInitialCanvasState(): { state: CanvasState; hasCache: boolean } {
-  try {
-    const cached = sessionStorage.getItem(CANVAS_CACHE_KEY);
-    if (cached) {
-      const data: { x: number; y: number; color: ColorCode }[] = JSON.parse(cached);
-      if (Array.isArray(data) && data.length === CANVAS_SIZE * CANVAS_SIZE) {
-        // Initialize fully populated canvas
-        const loadedPixels: ColorCode[][] = Array(CANVAS_SIZE)
-          .fill(null)
-          .map(() => Array(CANVAS_SIZE).fill(1)); // Default to white (1) if not specified
-        
-        // Fill in all pixels from cache
-        data.forEach((pixel) => {
-          if (
-            pixel.x >= 0 &&
-            pixel.x < CANVAS_SIZE &&
-            pixel.y >= 0 &&
-            pixel.y < CANVAS_SIZE
-          ) {
-            loadedPixels[pixel.y][pixel.x] = pixel.color;
-          }
-        });
-        
-        return { state: { ...initialState, pixels: loadedPixels, isLoading: false }, hasCache: true };
-      }
-    }
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error parsing cached canvas data:', error);
-    }
-    sessionStorage.removeItem(CANVAS_CACHE_KEY);
-  }
-  return { state: initialState, hasCache: false };
+// Helper to initialize state - always start with loading state
+function getInitialCanvasState(): CanvasState {
+  // Always start fresh - don't load from cache on app open
+  return initialState;
 }
 
 // Provider component
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
-  // Determine initial state and whether cached data was used
-  const initRef = useRef(getInitialCanvasState());
-  const [state, dispatch] = useReducer(canvasReducer, initRef.current.state);
-  const hasCache = initRef.current.hasCache;
+  // Always start with initial state - no cache loading
+  const [state, dispatch] = useReducer(canvasReducer, getInitialCanvasState());
   
-  // Fetch canvas data from Supabase if no cache was loaded
+  // Always fetch fresh canvas data from Supabase on mount
   useEffect(() => {
-    if (hasCache) return;
-
     const loadCanvasData = async () => {
       try {
         dispatch({ type: 'SET_LOADING', isLoading: true });
@@ -73,7 +39,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
         // Try binary format first for better performance
         if (import.meta.env.DEV) {
-          console.log('Attempting to load canvas using binary format...');
+          console.log('Fetching fresh canvas data using binary format...');
         }
         
         data = await fetchBinaryCanvasData();
@@ -109,7 +75,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // Cache the data for future use
+        // Cache the data for use during this session (but not for next app open)
         try {
           // Convert to cache format with dummy timestamps for binary data
           const cacheData = data.map(pixel => ({
@@ -156,7 +122,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadCanvasData();
-  }, [hasCache]);
+  }, []); // Empty dependency array - only run on mount
   
   return (
     <CanvasContext.Provider value={{ state, dispatch }}>
