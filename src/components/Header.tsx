@@ -36,7 +36,7 @@ const Header = () => {
     const cacheData: { x: number; y: number; color: number; updated_at: string }[] = [];
     
     if (state.pixels) {
-      // Convert all 10,000 pixels from the fully populated canvas
+      // Convert all 90,000 pixels from the fully populated canvas
       for (let y = 0; y < CANVAS_SIZE; y++) {
         for (let x = 0; x < CANVAS_SIZE; x++) {
           const color = state.pixels[y][x];

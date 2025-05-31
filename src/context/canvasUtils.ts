@@ -40,11 +40,11 @@ export async function updatePixelInSupabase(x: number, y: number, color: ColorCo
 // Helper function to fetch all canvas pixels from Supabase
 export async function fetchAllCanvasPixels() {
   try {
-    // Fetch all pixels in a single request (up to 100k rows)
+    // Fetch all pixels in a single request (up to 90k pixels for 300x300 canvas)
     const { data, error } = await supabase
       .from('canvas')
       .select('x, y, color, updated_at')
-      .range(0, 99999); // 0-based inclusive range for up to 100k pixels
+      .range(0, 89999); // 0-based inclusive range for up to 90k pixels
 
     if (error) {
       throw error;
@@ -78,12 +78,12 @@ export async function fetchAllCanvasPixels() {
 // Function to fetch only pixels updated since a specific timestamp
 export async function fetchUpdatedCanvasPixels(since: string) {
   try {
-    // Fetch all updated pixels in a single request (up to 100k rows)
+    // Fetch all updated pixels in a single request (up to 90k pixels for 300x300 canvas)
     const { data, error } = await supabase
       .from('canvas')
       .select('x, y, color, updated_at')
       .gt('updated_at', since) // Only get pixels updated after the given timestamp
-      .range(0, 99999); // 0-based inclusive range for up to 100k pixels
+      .range(0, 89999); // 0-based inclusive range for up to 90k pixels
 
     if (error) {
       throw error;

@@ -1,4 +1,3 @@
-
 import { ColorCode, COLOR_NAME_MAP } from "@/context/canvasTypes";
 
 // Draw a pixel on the canvas
@@ -51,7 +50,7 @@ export const drawGridLine = (
   ctx.fillRect(roundedX, roundedY, lineWidth, size);
 };
 
-// Draw a border for the outer edge tiles (x=0,y=0 and x=99,y=99)
+// Draw a border for the outer edge tiles (x=0,y=0 and x=299,y=299)
 export const drawOuterBorder = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -81,12 +80,12 @@ export const drawOuterBorder = (
     ctx.fillRect(roundedX - borderWidth, roundedY - borderWidth, size + (2 * borderWidth), borderWidth);
   }
   
-  // Right border for x=canvasSize-1 (99) - draw OUTSIDE the tile
+  // Right border for x=canvasSize-1 (299) - draw OUTSIDE the tile
   if (gridX === canvasSize - 1) {
     ctx.fillRect(roundedX + size, roundedY - borderWidth, borderWidth, size + (2 * borderWidth));
   }
   
-  // Bottom border for y=canvasSize-1 (99) - draw OUTSIDE the tile
+  // Bottom border for y=canvasSize-1 (299) - draw OUTSIDE the tile
   if (gridY === canvasSize - 1) {
     ctx.fillRect(roundedX - borderWidth, roundedY + size, size + (2 * borderWidth), borderWidth);
   }
