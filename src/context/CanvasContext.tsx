@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { canvasReducer, initialState } from './canvasReducer';
-import { fetchAllCanvasPixels } from './canvasUtils';
+import { fetchAllCanvasPixels, fetchBinaryCanvasData } from './canvasUtils';
 import { CanvasState, CanvasAction, CANVAS_SIZE, ColorCode } from './canvasTypes';
 
 // Export necessary types and constants from the types file
@@ -69,10 +69,30 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
       try {
         dispatch({ type: 'SET_LOADING', isLoading: true });
 
-        const data = await fetchAllCanvasPixels();
+        let data: { x: number; y: number; color: ColorCode }[] | null = null;
+
+        // Try binary format first for better performance
+        if (import.meta.env.DEV) {
+          console.log('Attempting to load canvas using binary format...');
+        }
+        
+        data = await fetchBinaryCanvasData();
+
+        // If binary failed, fall back to JSON
+        if (!data) {
+          if (import.meta.env.DEV) {
+            console.log('Binary format failed, falling back to JSON format...');
+          }
+          
+          data = await fetchAllCanvasPixels();
+        }
+
+        if (!data) {
+          throw new Error('Failed to load canvas data from both binary and JSON endpoints');
+        }
 
         if (import.meta.env.DEV) {
-          console.log(`Successfully fetched ${data.length} pixels from Supabase`);
+          console.log(`Successfully fetched ${data.length} pixels`);
         }
 
         // Validate we have a fully populated canvas
@@ -89,8 +109,14 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        // Cache the data for future use
         try {
-          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(data));
+          // Convert to cache format with dummy timestamps for binary data
+          const cacheData = data.map(pixel => ({
+            ...pixel,
+            updated_at: new Date().toISOString()
+          }));
+          sessionStorage.setItem(CANVAS_CACHE_KEY, JSON.stringify(cacheData));
         } catch (error) {
           if (import.meta.env.DEV) {
             console.error('Error caching canvas data:', error);

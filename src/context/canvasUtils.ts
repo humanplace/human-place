@@ -113,3 +113,80 @@ export async function fetchUpdatedCanvasPixels(since: string) {
     throw error;
   }
 }
+
+// Helper function to fetch binary canvas data (for initial load)
+export async function fetchBinaryCanvasData(): Promise<{ x: number; y: number; color: ColorCode }[] | null> {
+  try {
+    const response = await fetch(
+      'https://dzvsnevhawxdzxuqtdse.supabase.co/functions/v1/canvas-binary',
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dnNuZXZoYXd4ZHp4dXF0ZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNTMyNjIsImV4cCI6MjA2MTgyOTI2Mn0.-6dYHXxQ8VfBG6jZnjYC-pQrMx4xT9xhsA_Tav4iGRQ',
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Get binary data
+    const buffer = await response.arrayBuffer();
+    const binaryData = new Uint8Array(buffer);
+
+    // Validate size
+    if (binaryData.length !== 90000) {
+      throw new Error(`Invalid binary data size: ${binaryData.length}`);
+    }
+
+    // Get checksum from header and validate
+    const checksumHeader = response.headers.get('X-Canvas-Checksum');
+    if (checksumHeader) {
+      let calculatedChecksum = 0;
+      for (let i = 0; i < binaryData.length; i++) {
+        calculatedChecksum = (calculatedChecksum + binaryData[i]) & 0xFFFF;
+      }
+      
+      if (calculatedChecksum.toString() !== checksumHeader) {
+        if (import.meta.env.DEV) {
+          console.warn('Checksum mismatch, but continuing:', calculatedChecksum, checksumHeader);
+        }
+      }
+    }
+
+    // Convert binary data to pixel array format
+    const pixels: { x: number; y: number; color: ColorCode }[] = [];
+    
+    for (let y = 0; y < 300; y++) {
+      for (let x = 0; x < 300; x++) {
+        const index = y * 300 + x;
+        const color = binaryData[index] as ColorCode;
+        
+        // Validate color is in valid range
+        if (color >= 0 && color <= 10) {
+          pixels.push({ x, y, color });
+        } else {
+          // Default to white for invalid colors
+          pixels.push({ x, y, color: 1 });
+        }
+      }
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('Successfully loaded binary canvas data');
+    }
+
+    // Since this is initial load, we don't have timestamps, but we can set a base timestamp
+    lastUpdateTimestamp = new Date().toISOString();
+
+    return pixels;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Error fetching binary canvas data:', error);
+    }
+    // Return null to trigger fallback to JSON
+    return null;
+  }
+}
